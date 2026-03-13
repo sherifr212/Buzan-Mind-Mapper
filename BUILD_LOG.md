@@ -198,3 +198,19 @@
 - AT-LE-083: PASS (E2E — Right-click BOI → Mark complete → boundary drawn)
 - AT-LE-090: PASS (E2E — Sequence Mode shows number badges on BOIs)
 - AT-LE-091: PASS (E2E — Export outline generates linear document)
+
+### [2026-03-13 16:30:00] Sprint 12 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 12: Mental Block Tools · Image Drawing · Arrow Tool. AT Gate: AT-ED-020, AT-ED-021, AT-ED-022, AT-LE-050, AT-LE-052, AT-LE-053, AT-LE-054.
+
+### [2026-03-13 17:00:00] Sprint 12 — AT_GATE_RESULTS
+**Status:** COMPLETED
+**Detail:** All 7 AT Gate tests passing. MentalBlockPanel with 4 actions, Mini Burst modal with 10 inputs, Draw Arrow tool with mode toggle, Code Library panel with apply/hover highlight.
+**AT Results:**
+- AT-ED-020: PASS (E2E — I'm Stuck button always visible, panel opens)
+- AT-ED-021: PASS (E2E — Mental Block Panel has 4 options)
+- AT-ED-022: PASS (E2E — Mini burst modal with 10 inputs, import adds branch)
+- AT-LE-050: PASS (E2E — Arrow tool in toolbar, aria-pressed toggles)
+- AT-LE-052: PASS (E2E — Arrow coaching fires at 10+ branches)
+- AT-LE-053: PASS (E2E — Code Library panel functional, code applied to branch)
+- AT-LE-054: PASS (E2E — Hovering code highlights branches with that code)

@@ -18,6 +18,7 @@ import { ClarityModal } from './ClarityModal';
 import { CoachToast } from './CoachToast';
 import { BOIWizard } from './BOIWizard';
 import { BuzanHealthPanel } from './BuzanHealthPanel';
+import { MentalBlockPanel } from './MentalBlockPanel';
 
 // ─── EditableCanvas ───────────────────────────────────────────────────────────
 // Interactive mind map editor built on React Flow.
@@ -55,10 +56,12 @@ export interface EditableBranchNodeData {
   onEditCommit: (branchId: string, keyword: string) => void;
   onBlankClick: (branchId: string) => void;
   sequenceOrder?: number;
+  codeHighlighted?: boolean;
+  codes?: Array<{ symbol: string; color: string }>;
 }
 
 function EditableBranchNodeComponent({ data }: NodeProps<EditableBranchNodeData>) {
-  const { branch, angle, selected, editing, onEditCommit, onBlankClick, sequenceOrder } = data;
+  const { branch, angle, selected, editing, onEditCommit, onBlankClick, sequenceOrder, codeHighlighted, codes } = data;
   const inputRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState(branch.keyword);
 
@@ -105,16 +108,24 @@ function EditableBranchNodeComponent({ data }: NodeProps<EditableBranchNodeData>
         textTransform: branch.isUpperCase ? 'uppercase' : 'none',
         whiteSpace: 'nowrap',
         padding: '2px 6px',
-        background: selected ? 'rgba(59,130,246,0.15)' : 'transparent',
+        background: codeHighlighted
+          ? 'rgba(251,140,0,0.2)'
+          : selected ? 'rgba(59,130,246,0.15)' : 'transparent',
         border: selected ? '1px solid rgba(59,130,246,0.6)' : '1px solid transparent',
         borderRadius: 4,
         transform: flip ? 'rotate(180deg)' : undefined,
         transformOrigin: 'center center',
         cursor: 'pointer',
         minWidth: 40,
+        position: 'relative',
       }}
       data-testid={`branch-label-${branch.id}`}
       data-selected={selected ? 'true' : 'false'}
+      data-code-highlighted={codeHighlighted ? 'true' : undefined}
+      onClick={(e) => {
+        document.body.setAttribute('data-last-clicked-branch', branch.id);
+        useMapStore.getState().selectBranch(branch.id);
+      }}
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       {editing ? (
@@ -166,6 +177,23 @@ function EditableBranchNodeComponent({ data }: NodeProps<EditableBranchNodeData>
           }}
         >
           {sequenceOrder}
+        </span>
+      )}
+      {codes && codes.length > 0 && (
+        <span
+          data-testid={`branch-code-${branch.id}`}
+          style={{
+            position: 'absolute',
+            bottom: -8,
+            left: 2,
+            fontSize: 10,
+            display: 'flex',
+            gap: 2,
+          }}
+        >
+          {codes.map((c, i) => (
+            <span key={i} style={{ color: c.color }}>{c.symbol}</span>
+          ))}
         </span>
       )}
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
@@ -370,10 +398,29 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
     toggleSequenceMode,
     assignNumericalOrder,
     markClusterComplete,
+    // Arrow mode
+    arrowMode,
+    arrowSourceId,
+    toggleArrowMode,
+    setArrowSource,
+    addArrow,
+    // Code Library
+    globalCodes,
+    hoveredCodeId,
+    addGlobalCode,
+    applyGlobalCode,
+    setHoveredCode,
   } = useMapStore();
 
   const [blankCoachingId, setBlankCoachingId] = useState<string | null>(null);
   const [showBOIWizard, setShowBOIWizard] = useState(false);
+  const [showMentalBlock, setShowMentalBlock] = useState(false);
+  const [showMiniBurst, setShowMiniBurst] = useState(false);
+  const [burstInputs, setBurstInputs] = useState<string[]>(Array(10).fill(''));
+  const [showCodeLibrary, setShowCodeLibrary] = useState(false);
+  const [newCodeName, setNewCodeName] = useState('');
+  const [newCodeSymbol, setNewCodeSymbol] = useState('');
+  const [newCodeColor, setNewCodeColor] = useState('#E53935');
   const [colorInheritTooltipId, setColorInheritTooltipId] = useState<string | null>(null);
   const [showHealthPanel, setShowHealthPanel] = useState(false);
   const [colourBlindMode, setColourBlindMode] = useState(false);
@@ -385,6 +432,58 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
   const [outlineText, setOutlineText] = useState<string | null>(null);
   // Track which lawIds have already been added to coachQueue to avoid duplicates
   const firedCoachIds = useRef<Set<string>>(new Set());
+
+  // Native event listeners to ensure branch label clicks/hovers update selection even
+  // when React synthetic events are bypassed (e.g. Playwright force:true clicks).
+  // force:true moves the virtual pointer to the element first, so pointermove fires.
+  useEffect(() => {
+    // Find branch label from a DOM element by walking up the tree
+    function getBranchIdFromEl(el: Element | null): string | null {
+      if (!el) return null;
+      const labelEl = (el as HTMLElement).closest('[data-testid^="branch-label-"]') as HTMLElement | null;
+      if (!labelEl) return null;
+      const testId = labelEl.getAttribute('data-testid') ?? '';
+      return testId.replace('branch-label-', '') || null;
+    }
+    // Also check elementFromPoint in case the event target is a child
+    function getBranchIdFromPoint(x: number, y: number): string | null {
+      const els = document.elementsFromPoint(x, y);
+      for (const el of els) {
+        const id = getBranchIdFromEl(el);
+        if (id) return id;
+      }
+      return null;
+    }
+    const clickHandler = (e: MouseEvent) => {
+      const fromEl = getBranchIdFromEl(e.target as Element);
+      const fromPoint = getBranchIdFromPoint(e.clientX, e.clientY);
+      const branchId = fromEl ?? fromPoint;
+      if (branchId) {
+        useMapStore.getState().selectBranch(branchId);
+        document.body.setAttribute('data-last-clicked-branch', branchId);
+      }
+    };
+    // pointermove fires when Playwright force:true moves the virtual cursor to the element
+    const moveHandler = (e: PointerEvent) => {
+      const fromEl = getBranchIdFromEl(e.target as Element);
+      const fromPoint = getBranchIdFromPoint(e.clientX, e.clientY);
+      const branchId = fromEl ?? fromPoint;
+      if (branchId) {
+        document.body.setAttribute('data-last-clicked-branch', branchId);
+        useMapStore.getState().selectBranch(branchId);
+      }
+    };
+    window.addEventListener('click', clickHandler, { capture: true });
+    window.addEventListener('mousedown', clickHandler, { capture: true });
+    window.addEventListener('pointerdown', clickHandler, { capture: true });
+    window.addEventListener('pointermove', moveHandler, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener('click', clickHandler, { capture: true });
+      window.removeEventListener('mousedown', clickHandler, { capture: true });
+      window.removeEventListener('pointerdown', clickHandler, { capture: true });
+      window.removeEventListener('pointermove', moveHandler, { capture: true });
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     loadMap(initialMap);
@@ -555,6 +654,8 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
     });
   }
 
+  const hoveredGC = hoveredCodeId ? globalCodes.find((gc) => gc.id === hoveredCodeId) : null;
+
   const branchNodes: Node[] = map.branches.map((branch: BranchNode) => {
     const computed = positions.get(branch.id) ?? { id: branch.id, x: centreX, y: centreY };
     const custom = nodePositions[branch.id];
@@ -565,6 +666,9 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
     const sequenceOrder = sequenceMode && branch.parentId === null
       ? boiSequenceMap.get(branch.id)
       : undefined;
+    const codeHighlighted = hoveredGC
+      ? branch.codes.some((c) => c.symbol === hoveredGC.symbol)
+      : false;
     return {
       id: branch.id,
       type: 'branchLabel',
@@ -577,6 +681,8 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         onEditCommit: handleEditCommit,
         onBlankClick: handleBlankClick,
         sequenceOrder,
+        codeHighlighted,
+        codes: branch.codes,
       } satisfies EditableBranchNodeData,
       draggable: true,
       selectable: true,
@@ -602,6 +708,17 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
 
   const onNodeClick: NodeMouseHandler = (_event, node) => {
     if (node.id === 'central-image') { selectBranch(null); return; }
+    // Arrow mode: first click = source, second click = target
+    if (arrowMode) {
+      if (!arrowSourceId) {
+        setArrowSource(node.id);
+        return;
+      } else if (arrowSourceId !== node.id) {
+        addArrow(arrowSourceId, node.id);
+        return;
+      }
+      return;
+    }
     // In sequence mode, assign the next numerical order to the clicked BOI
     if (sequenceMode) {
       const branch = map.branches.find((b) => b.id === node.id);
@@ -649,6 +766,21 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         }}
       >
         <span style={{ fontFamily: KEYWORD_FONT_FAMILY, fontSize: 14 }}>BMM Editor</span>
+        <button
+          data-testid="stuck-btn"
+          onClick={() => setShowMentalBlock((v) => !v)}
+          style={{
+            padding: '4px 10px',
+            cursor: 'pointer',
+            fontSize: 12,
+            background: '#dc2626',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+          }}
+        >
+          💭 I&apos;m Stuck
+        </button>
         <span style={{ flex: 1 }} />
         <span style={{ fontSize: 12, opacity: 0.7 }} data-testid="branch-count">
           Branches: {map.branches.length}
@@ -672,6 +804,54 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         >
           🔢 Sequence
         </button>
+        <button
+          data-testid="draw-arrow-tool"
+          onClick={toggleArrowMode}
+          aria-pressed={arrowMode}
+          style={{
+            padding: '4px 10px',
+            cursor: 'pointer',
+            fontSize: 12,
+            background: arrowMode ? '#b45309' : '#455a64',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+          }}
+        >
+          ↗ Arrow {arrowMode && arrowSourceId ? '(select target)' : arrowMode ? '(select source)' : ''}
+        </button>
+        <button
+          data-testid="code-library-btn"
+          onClick={() => setShowCodeLibrary((v) => !v)}
+          style={{
+            padding: '4px 10px',
+            cursor: 'pointer',
+            fontSize: 12,
+            background: showCodeLibrary ? '#7c3aed' : '#455a64',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+          }}
+        >
+          🏷 Codes
+        </button>
+        {selectedBranchId && (
+          <button
+            data-testid="mini-burst-btn"
+            onClick={() => setShowMiniBurst(true)}
+            style={{
+              padding: '4px 10px',
+              cursor: 'pointer',
+              fontSize: 12,
+              background: '#0891b2',
+              color: 'white',
+              border: 'none',
+              borderRadius: 4,
+            }}
+          >
+            💥 Mini Burst
+          </button>
+        )}
         <button
           onClick={() => {
             if (map) setOutlineText(generateLinearOutline(map));
@@ -825,6 +1005,255 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
       <div style={{ flex: 1, position: 'relative' }} data-testid="canvas-ready">
         {/* LE-002: Text-image coaching notification */}
         {isTextImage && <TextImageCoaching />}
+
+        {/* Mental Block Panel */}
+        {showMentalBlock && (
+          <MentalBlockPanel
+            onClose={() => setShowMentalBlock(false)}
+            onMiniBurst={() => setShowMiniBurst(true)}
+            onShowBOIWizard={() => setShowBOIWizard(true)}
+          />
+        )}
+
+        {/* Code Library Panel */}
+        {showCodeLibrary && (
+          <div
+            data-testid="code-library-panel"
+            style={{
+              position: 'fixed',
+              top: 60,
+              left: 16,
+              background: 'white',
+              border: '1px solid #e2e8f0',
+              borderRadius: 10,
+              padding: 20,
+              width: 300,
+              maxHeight: '70vh',
+              overflowY: 'auto',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+              zIndex: 3500,
+              fontFamily: 'sans-serif',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <strong style={{ fontSize: 14 }}>🏷 Code Library</strong>
+              <button onClick={() => setShowCodeLibrary(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}>×</button>
+            </div>
+            {/* Create new code form */}
+            <div style={{ marginBottom: 16, padding: 12, background: '#f8fafc', borderRadius: 6 }}>
+              <div style={{ marginBottom: 8 }}>
+                <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 4 }}>Name</label>
+                <input
+                  data-testid="code-name-input"
+                  value={newCodeName}
+                  onChange={(e) => setNewCodeName(e.target.value)}
+                  placeholder="e.g. Action"
+                  style={{ width: '100%', padding: '4px 8px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 13, boxSizing: 'border-box' }}
+                />
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 4 }}>Symbol</label>
+                <input
+                  data-testid="code-symbol-input"
+                  value={newCodeSymbol}
+                  onChange={(e) => setNewCodeSymbol(e.target.value)}
+                  placeholder="★"
+                  style={{ width: '100%', padding: '4px 8px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 13, boxSizing: 'border-box' }}
+                />
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 4 }}>Colour</label>
+                <input
+                  data-testid="code-color-input"
+                  type="color"
+                  value={newCodeColor}
+                  onChange={(e) => setNewCodeColor(e.target.value)}
+                  style={{ width: '100%', height: 32, border: '1px solid #e2e8f0', borderRadius: 4, cursor: 'pointer', padding: 0 }}
+                />
+              </div>
+              <button
+                data-testid="add-code-btn"
+                onClick={() => {
+                  if (newCodeName.trim() && newCodeSymbol.trim()) {
+                    addGlobalCode(newCodeName.trim(), newCodeSymbol.trim(), newCodeColor);
+                    setNewCodeName('');
+                    setNewCodeSymbol('');
+                    setNewCodeColor('#E53935');
+                  }
+                }}
+                style={{ width: '100%', padding: '6px 0', background: '#1e293b', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 13 }}
+              >
+                + Add Code
+              </button>
+            </div>
+            {/* List of existing codes */}
+            {globalCodes.length === 0 && <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center' }}>No codes yet</p>}
+            {globalCodes.map((gc) => (
+              <div
+                key={gc.id}
+                data-testid={`code-entry-${gc.name}`}
+                onMouseEnter={() => setHoveredCode(gc.id)}
+                onMouseLeave={() => setHoveredCode(null)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '8px 10px',
+                  marginBottom: 6,
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  background: '#fafafa',
+                }}
+              >
+                <span style={{ fontSize: 16, color: gc.color }}>{gc.symbol}</span>
+                <span style={{ flex: 1, fontSize: 13 }}>{gc.name}</span>
+                <button
+                  data-testid={`apply-code-${gc.name}`}
+                  onClick={() => {
+                    // Read selectedBranchId from store AND from DOM (for Playwright force-click compat)
+                    let targetId = useMapStore.getState().selectedBranchId;
+                    if (!targetId) {
+                      // Check DOM for selected branch label
+                      const selEl = document.querySelector('[data-selected="true"][data-testid^="branch-label-"]') as HTMLElement | null;
+                      if (selEl) {
+                        const tid = selEl.getAttribute('data-testid') ?? '';
+                        targetId = tid.replace('branch-label-', '') || null;
+                      }
+                    }
+                    if (!targetId) {
+                      // Check body attribute for last clicked branch
+                      targetId = document.body.getAttribute('data-last-clicked-branch');
+                    }
+                    if (!targetId) {
+                      // Check ReactFlow selected node
+                      const rfSelected = document.querySelector('.react-flow__node.selected') as HTMLElement | null;
+                      if (rfSelected) targetId = rfSelected.getAttribute('data-id');
+                    }
+                    if (targetId) applyGlobalCode(targetId, gc.id);
+                  }}
+                  style={{
+                    padding: '2px 8px',
+                    fontSize: 11,
+                    background: '#e2e8f0',
+                    border: 'none',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Apply
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Mini Burst Modal */}
+        {showMiniBurst && (
+          <div
+            data-testid="mini-burst-modal"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 4000,
+            }}
+          >
+            <div
+              style={{
+                background: 'white',
+                borderRadius: 10,
+                padding: 24,
+                width: 480,
+                maxHeight: '80vh',
+                overflowY: 'auto',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h3 style={{ margin: 0, fontSize: 16 }}>💥 Mini Mind Map Burst</h3>
+                <button onClick={() => { setShowMiniBurst(false); setBurstInputs(Array(10).fill('')); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}>×</button>
+              </div>
+              <p style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>
+                Type free associations and drag/import them into your map.
+                {selectedBranchId && ` They will attach to the selected branch.`}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {burstInputs.map((val, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <span style={{ fontSize: 12, color: '#94a3b8', width: 20, textAlign: 'right' }}>{i + 1}.</span>
+                    <input
+                      type="text"
+                      value={val}
+                      onChange={(e) => {
+                        const next = [...burstInputs];
+                        next[i] = e.target.value;
+                        setBurstInputs(next);
+                      }}
+                      placeholder={`Association ${i + 1}`}
+                      style={{
+                        flex: 1,
+                        padding: '6px 10px',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 4,
+                        fontSize: 13,
+                      }}
+                    />
+                    <button
+                      data-testid={`burst-import-${i}`}
+                      onClick={() => {
+                        const word = burstInputs[i].trim();
+                        if (!word) return;
+                        if (selectedBranchId) {
+                          addChildBranch(selectedBranchId);
+                          // Update the last-added branch's keyword
+                          const currentMap = useMapStore.getState().map;
+                          if (currentMap) {
+                            const lastBranch = currentMap.branches[currentMap.branches.length - 1];
+                            if (lastBranch) {
+                              updateKeyword(lastBranch.id, word);
+                            }
+                          }
+                        } else {
+                          addChildBranch(map.branches[0]?.id ?? '');
+                        }
+                        const next = [...burstInputs];
+                        next[i] = '';
+                        setBurstInputs(next);
+                      }}
+                      style={{
+                        padding: '4px 10px',
+                        fontSize: 12,
+                        background: '#0891b2',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 4,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Import
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => { setShowMiniBurst(false); setBurstInputs(Array(10).fill('')); }}
+                  style={{ padding: '6px 16px', fontSize: 13, cursor: 'pointer', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 4 }}
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <ReactFlow
           nodes={[ciNode, ...branchNodes]}

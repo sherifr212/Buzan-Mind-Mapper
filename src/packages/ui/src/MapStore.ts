@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { MindMap, BranchNode } from '@bmm/data-model';
+import type { MindMap, BranchNode, Arrow } from '@bmm/data-model';
 import { EnforcementEngine } from '@bmm/enforcement';
 import { checkKeywordSingleWord, checkOrientationIsLandscape } from '@bmm/enforcement';
 
@@ -53,6 +53,13 @@ export interface CoachItem {
   message: string;
 }
 
+export interface GlobalCode {
+  id: string;
+  name: string;
+  symbol: string;
+  color: string;
+}
+
 export interface MapStoreState {
   map: MindMap | null;
   selectedBranchId: string | null;
@@ -77,6 +84,14 @@ export interface MapStoreState {
   // ─── Sequence & Cluster state ──────────────────────────────────────────────
   /** Whether Sequence Mode is active (numbered BOI badges). */
   sequenceMode: boolean;
+
+  // ─── Arrow mode ────────────────────────────────────────────────────────────
+  arrowMode: boolean;
+  arrowSourceId: string | null;
+
+  // ─── Code Library ──────────────────────────────────────────────────────────
+  globalCodes: GlobalCode[];
+  hoveredCodeId: string | null;
 
   loadMap: (map: MindMap) => void;
   selectBranch: (id: string | null) => void;
@@ -105,6 +120,16 @@ export interface MapStoreState {
   toggleSequenceMode: () => void;
   assignNumericalOrder: (branchId: string, order: number) => void;
   markClusterComplete: (branchId: string) => void;
+
+  // ─── Arrow mode actions ────────────────────────────────────────────────────
+  toggleArrowMode: () => void;
+  setArrowSource: (id: string | null) => void;
+  addArrow: (sourceId: string, targetId: string) => void;
+
+  // ─── Code Library actions ──────────────────────────────────────────────────
+  addGlobalCode: (name: string, symbol: string, color: string) => void;
+  applyGlobalCode: (branchId: string, codeId: string) => void;
+  setHoveredCode: (codeId: string | null) => void;
 }
 
 /** Push current map onto past stack before a mutation. */
@@ -183,6 +208,10 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
   clarityModal: null,
   coachQueue: [],
   sequenceMode: false,
+  arrowMode: false,
+  arrowSourceId: null,
+  globalCodes: [],
+  hoveredCodeId: null,
 
   loadMap: (map) =>
     set({
@@ -566,4 +595,60 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
         },
       };
     }),
+
+  // ─── Arrow mode actions ───────────────────────────────────────────────────
+
+  toggleArrowMode: () => set((state) => ({ arrowMode: !state.arrowMode, arrowSourceId: null })),
+
+  setArrowSource: (id) => set({ arrowSourceId: id }),
+
+  addArrow: (sourceId, targetId) =>
+    set((state) => {
+      if (!state.map) return state;
+      const newArrow: Arrow = {
+        id: genId(),
+        sourceNodeId: sourceId,
+        targetNodeId: targetId,
+        directionality: 'UNI',
+        arrowStyle: { size: 2, form: 'solid', dimension: false },
+        label: null,
+        color: '#1e293b',
+      };
+      const hist = pushHistory(state);
+      return {
+        ...hist,
+        map: { ...state.map, arrows: [...state.map.arrows, newArrow], updatedAt: new Date().toISOString() },
+        arrowMode: false,
+        arrowSourceId: null,
+      };
+    }),
+
+  // ─── Code Library actions ─────────────────────────────────────────────────
+
+  addGlobalCode: (name, symbol, color) =>
+    set((state) => ({
+      globalCodes: [...state.globalCodes, { id: genId(), name, symbol, color }],
+    })),
+
+  applyGlobalCode: (branchId, codeId) =>
+    set((state) => {
+      if (!state.map) return state;
+      const gc = state.globalCodes.find((c) => c.id === codeId);
+      if (!gc) return state;
+      const hist = pushHistory(state);
+      return {
+        ...hist,
+        map: {
+          ...state.map,
+          branches: state.map.branches.map((b) =>
+            b.id === branchId
+              ? { ...b, codes: [...b.codes.filter((c) => c.symbol !== gc.symbol), { symbol: gc.symbol, color: gc.color }] }
+              : b
+          ),
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    }),
+
+  setHoveredCode: (codeId) => set({ hoveredCodeId: codeId }),
 }));
