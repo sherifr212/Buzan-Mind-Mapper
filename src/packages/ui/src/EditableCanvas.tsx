@@ -12,11 +12,15 @@ import {
 } from '@bmm/canvas';
 import { Handle } from 'reactflow';
 import { useMapStore } from './MapStore';
+import { BlockModal } from './BlockModal';
+import { WarnToast } from './WarnToast';
+import { ClarityModal } from './ClarityModal';
 
 // ─── EditableCanvas ───────────────────────────────────────────────────────────
 // Interactive mind map editor built on React Flow.
 // Sprint 6: Tab=child, Enter=sibling, Delete=remove, F2/dblclick=edit,
 //           Drag, Ctrl+Z/Shift+Z=undo/redo, toolbar blank-line button.
+// Sprint 7: Enforcement middleware — BlockModal, WarnToast, ClarityModal wired.
 
 function pickHandleId(angle: number): string {
   const a = ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
@@ -196,6 +200,72 @@ function BlankBranchCoaching({
   );
 }
 
+// ─── Text-image coaching overlay (LE-002) ─────────────────────────────────────
+
+function TextImageCoaching() {
+  const [visible, setVisible] = useState(true);
+  if (!visible) return null;
+  return (
+    <div
+      data-testid="text-image-coaching"
+      style={{
+        position: 'absolute',
+        top: 72,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: '#e8f5e9',
+        border: '1px solid #43a047',
+        borderRadius: 8,
+        padding: '12px 20px',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+        zIndex: 1200,
+        maxWidth: 480,
+        fontFamily: 'sans-serif',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+      }}
+    >
+      <span style={{ fontSize: 20 }}>💡</span>
+      <p
+        data-testid="text-image-coaching-message"
+        style={{ margin: 0, fontSize: 13, color: '#2e7d32', flex: 1 }}
+      >
+        Buzan recommends always using an image at the centre of your Mind Map — images engage
+        both hemispheres of the brain.
+      </p>
+      <button
+        data-testid="draw-image-btn"
+        style={{
+          padding: '6px 12px',
+          background: '#43a047',
+          color: 'white',
+          border: 'none',
+          borderRadius: 4,
+          fontSize: 12,
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+        }}
+        onClick={() => setVisible(false)}
+      >
+        Draw an image instead
+      </button>
+      <button
+        onClick={() => setVisible(false)}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          fontSize: 16,
+          color: '#555',
+        }}
+      >
+        ×
+      </button>
+    </div>
+  );
+}
+
 // ─── EditableCanvas ───────────────────────────────────────────────────────────
 
 export interface EditableCanvasProps {
@@ -220,6 +290,15 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
     undo,
     redo,
     past,
+    // Enforcement
+    blockModal,
+    warnQueue,
+    clarityModal,
+    dismissBlock,
+    dismissWarn,
+    commitClarityKeep,
+    commitClaritySplit,
+    setOrientation,
   } = useMapStore();
 
   const [blankCoachingId, setBlankCoachingId] = useState<string | null>(null);
@@ -285,22 +364,38 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
 
   if (!map) return <div data-testid="canvas-loading">Loading…</div>;
 
+  const hasCentralImage = Boolean(map.centralImage);
+  const isTextImage = map.centralImage?.type === 'text-image';
+
   const { canvasSize, centralImage } = map;
-  const positions = computeLayout(map, canvasSize.width, canvasSize.height);
+
+  // If no central image, render a placeholder canvas with block state
+  const ciNode: Node = centralImage
+    ? {
+        id: 'central-image',
+        type: 'centralImage',
+        position: {
+          x: canvasSize.width / 2 - centralImage.size.width / 2,
+          y: canvasSize.height / 2 - centralImage.size.height / 2,
+        },
+        data: { image: centralImage },
+        draggable: false,
+        selectable: false,
+      }
+    : {
+        id: 'central-image',
+        type: 'centralImage',
+        position: { x: canvasSize.width / 2 - 60, y: canvasSize.height / 2 - 60 },
+        data: { image: null },
+        draggable: false,
+        selectable: false,
+      };
+
   const centreX = canvasSize.width / 2;
   const centreY = canvasSize.height / 2;
-
-  const ciNode: Node = {
-    id: 'central-image',
-    type: 'centralImage',
-    position: {
-      x: centreX - centralImage.size.width / 2,
-      y: centreY - centralImage.size.height / 2,
-    },
-    data: { image: centralImage },
-    draggable: false,
-    selectable: false,
-  };
+  const positions = centralImage
+    ? computeLayout(map, canvasSize.width, canvasSize.height)
+    : new Map();
 
   const branchNodes: Node[] = map.branches.map((branch: BranchNode) => {
     const computed = positions.get(branch.id) ?? { id: branch.id, x: centreX, y: centreY };
@@ -382,6 +477,18 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         </span>
         <button
           onClick={() => addBlankLine(selectedBranchId)}
+          data-testid="add-branch"
+          style={{
+            padding: '4px 10px',
+            cursor: hasCentralImage ? 'pointer' : 'not-allowed',
+            fontSize: 12,
+            opacity: hasCentralImage ? 1 : 0.4,
+          }}
+        >
+          + Add Branch
+        </button>
+        <button
+          onClick={() => addBlankLine(selectedBranchId)}
           data-testid="add-blank-line-btn"
           style={{ padding: '4px 10px', cursor: 'pointer', fontSize: 12 }}
         >
@@ -402,13 +509,28 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         >
           ↪ Redo
         </button>
+        {/* Orientation control (LE-062) */}
+        <button
+          onClick={() => setOrientation('PORTRAIT')}
+          data-testid="orientation-portrait-btn"
+          style={{ padding: '4px 10px', cursor: 'pointer', fontSize: 12, opacity: 0.7 }}
+          title="Buzan recommends landscape — this will be blocked"
+        >
+          ↕ Portrait
+        </button>
         <span data-testid="selected-branch-id" style={{ display: 'none' }}>
           {selectedBranchId ?? ''}
+        </span>
+        <span data-testid="orientation-display" style={{ display: 'none' }}>
+          {map.orientation}
         </span>
       </div>
 
       {/* Canvas — fills remaining viewport height */}
       <div style={{ flex: 1, position: 'relative' }} data-testid="canvas-ready">
+        {/* LE-002: Text-image coaching notification */}
+        {isTextImage && <TextImageCoaching />}
+
         <ReactFlow
           nodes={[ciNode, ...branchNodes]}
           edges={branchEdges}
@@ -444,7 +566,23 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
             }}
           />
         )}
+
+        {/* WARN toasts */}
+        <WarnToast items={warnQueue} onDismiss={dismissWarn} />
       </div>
+
+      {/* BLOCK modal — portal-style, fixed overlay */}
+      {blockModal && <BlockModal block={blockModal} onDismiss={dismissBlock} />}
+
+      {/* Clarity modal (LE-060) */}
+      {clarityModal && (
+        <ClarityModal
+          pendingKeyword={clarityModal.pendingKeyword}
+          words={clarityModal.words}
+          onSplit={commitClaritySplit}
+          onKeep={commitClarityKeep}
+        />
+      )}
     </div>
   );
 }

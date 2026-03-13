@@ -1,0 +1,49 @@
+{
+  "format": "bmm",
+  "version": "1.0",
+  "id": "fixture-text-central-001",
+  "title": "Text Central Image — coaching demo",
+  "orientation": "LANDSCAPE",
+  "createdAt": "2026-03-13T00:00:00.000Z",
+  "updatedAt": "2026-03-13T00:00:00.000Z",
+  "canvasSize": { "width": 1920, "height": 1080 },
+  "colorPalette": ["#E53935", "#43A047", "#1E88E5", "#FB8C00", "#8E24AA"],
+  "centralImage": {
+    "id": "ci-text-001",
+    "type": "text-image",
+    "src": "MIND",
+    "colors": ["#E53935", "#43A047", "#1E88E5"],
+    "hasDimension": false,
+    "position": { "x": 910, "y": 490 },
+    "size": { "width": 120, "height": 120 }
+  },
+  "bois": [],
+  "branches": [
+    {
+      "id": "b1",
+      "parentId": null,
+      "keyword": "Ideas",
+      "isUpperCase": true,
+      "color": "#E53935",
+      "lineThickness": 5,
+      "isCurved": true,
+      "length": 80,
+      "angle": 0,
+      "depth": 0,
+      "image": null,
+      "hasBoundary": false,
+      "boundaryShape": null,
+      "numericalOrder": null,
+      "codes": [],
+      "blankLine": false,
+      "linkedMapId": null
+    }
+  ],
+  "arrows": [],
+  "reviewSchedule": null,
+  "isGroupMap": false,
+  "participants": [],
+  "linkedMaps": [],
+  "numericalOrder": [],
+  "tags": []
+}

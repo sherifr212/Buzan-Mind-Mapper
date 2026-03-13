@@ -1,0 +1,38 @@
+{
+  "format": "bmm",
+  "version": "1.0",
+  "id": "fixture-many-branches-001",
+  "title": "Many Branches — enforcement test",
+  "orientation": "LANDSCAPE",
+  "createdAt": "2026-03-13T00:00:00.000Z",
+  "updatedAt": "2026-03-13T00:00:00.000Z",
+  "canvasSize": { "width": 1920, "height": 1080 },
+  "colorPalette": ["#E53935", "#43A047", "#1E88E5", "#FB8C00", "#8E24AA", "#00ACC1", "#6D4C41", "#546E7A"],
+  "centralImage": {
+    "id": "ci-001",
+    "type": "text-image",
+    "src": "FOCUS",
+    "colors": ["#E53935", "#43A047", "#1E88E5"],
+    "hasDimension": true,
+    "position": { "x": 910, "y": 490 },
+    "size": { "width": 120, "height": 120 }
+  },
+  "bois": [],
+  "branches": [
+    { "id": "b1", "parentId": null, "keyword": "One", "isUpperCase": true, "color": "#E53935", "lineThickness": 5, "isCurved": true, "length": 60, "angle": 0, "depth": 0, "image": null, "hasBoundary": false, "boundaryShape": null, "numericalOrder": null, "codes": [], "blankLine": false, "linkedMapId": null },
+    { "id": "b2", "parentId": null, "keyword": "Two", "isUpperCase": true, "color": "#43A047", "lineThickness": 5, "isCurved": true, "length": 60, "angle": 0.785, "depth": 0, "image": null, "hasBoundary": false, "boundaryShape": null, "numericalOrder": null, "codes": [], "blankLine": false, "linkedMapId": null },
+    { "id": "b3", "parentId": null, "keyword": "Three", "isUpperCase": true, "color": "#1E88E5", "lineThickness": 5, "isCurved": true, "length": 60, "angle": 1.571, "depth": 0, "image": null, "hasBoundary": false, "boundaryShape": null, "numericalOrder": null, "codes": [], "blankLine": false, "linkedMapId": null },
+    { "id": "b4", "parentId": null, "keyword": "Four", "isUpperCase": true, "color": "#FB8C00", "lineThickness": 5, "isCurved": true, "length": 60, "angle": 2.356, "depth": 0, "image": null, "hasBoundary": false, "boundaryShape": null, "numericalOrder": null, "codes": [], "blankLine": false, "linkedMapId": null },
+    { "id": "b5", "parentId": null, "keyword": "Five", "isUpperCase": true, "color": "#8E24AA", "lineThickness": 5, "isCurved": true, "length": 60, "angle": 3.141, "depth": 0, "image": null, "hasBoundary": false, "boundaryShape": null, "numericalOrder": null, "codes": [], "blankLine": false, "linkedMapId": null },
+    { "id": "b6", "parentId": null, "keyword": "Six", "isUpperCase": true, "color": "#00ACC1", "lineThickness": 5, "isCurved": true, "length": 60, "angle": 3.927, "depth": 0, "image": null, "hasBoundary": false, "boundaryShape": null, "numericalOrder": null, "codes": [], "blankLine": false, "linkedMapId": null },
+    { "id": "b7", "parentId": null, "keyword": "Seven", "isUpperCase": true, "color": "#6D4C41", "lineThickness": 5, "isCurved": true, "length": 60, "angle": 4.712, "depth": 0, "image": null, "hasBoundary": false, "boundaryShape": null, "numericalOrder": null, "codes": [], "blankLine": false, "linkedMapId": null },
+    { "id": "b8", "parentId": null, "keyword": "Eight", "isUpperCase": true, "color": "#546E7A", "lineThickness": 5, "isCurved": true, "length": 60, "angle": 5.497, "depth": 0, "image": null, "hasBoundary": false, "boundaryShape": null, "numericalOrder": null, "codes": [], "blankLine": false, "linkedMapId": null }
+  ],
+  "arrows": [],
+  "reviewSchedule": null,
+  "isGroupMap": false,
+  "participants": [],
+  "linkedMaps": [],
+  "numericalOrder": [],
+  "tags": []
+}

@@ -1,0 +1,21 @@
+{
+  "format": "bmm",
+  "version": "1.0",
+  "id": "fixture-empty-001",
+  "title": "Empty Map — No Central Image",
+  "orientation": "LANDSCAPE",
+  "createdAt": "2026-03-13T00:00:00.000Z",
+  "updatedAt": "2026-03-13T00:00:00.000Z",
+  "canvasSize": { "width": 1920, "height": 1080 },
+  "colorPalette": ["#E53935", "#43A047", "#1E88E5", "#FB8C00", "#8E24AA"],
+  "centralImage": null,
+  "bois": [],
+  "branches": [],
+  "arrows": [],
+  "reviewSchedule": null,
+  "isGroupMap": false,
+  "participants": [],
+  "linkedMaps": [],
+  "numericalOrder": [],
+  "tags": []
+}

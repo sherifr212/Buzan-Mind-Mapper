@@ -1,12 +1,18 @@
 import { BrowserRouter, Routes, Route, Link, useParams } from 'react-router-dom';
 import { EditableCanvas } from '@bmm/ui';
 import fixtureSimple from './fixtures/fixture-simple.bmm.json';
+import fixtureEmpty from './fixtures/fixture-empty.bmm.json';
+import fixtureTextCentral from './fixtures/fixture-text-central.bmm.json';
+import fixtureManyBranches from './fixtures/fixture-many-branches.bmm.json';
 import type { MindMap } from '@bmm/data-model';
 
 // ─── Fixture registry ─────────────────────────────────────────────────────────
 
 const FIXTURES: Record<string, MindMap> = {
   'test-fixture-simple': fixtureSimple as unknown as MindMap,
+  'test-fixture-empty': fixtureEmpty as unknown as MindMap,
+  'test-fixture-text-central': fixtureTextCentral as unknown as MindMap,
+  'test-fixture-many-branches': fixtureManyBranches as unknown as MindMap,
 };
 
 // ─── Map Editor Page ──────────────────────────────────────────────────────────
@@ -24,6 +30,16 @@ function MapEditorPage({ mapId }: { mapId: string }) {
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <EditableCanvas initialMap={map} />
+    </div>
+  );
+}
+
+// ─── New map page (alias for empty fixture) ───────────────────────────────────
+
+function NewMapPage() {
+  return (
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <EditableCanvas initialMap={FIXTURES['test-fixture-empty']} />
     </div>
   );
 }
@@ -48,6 +64,9 @@ function HomePage() {
             <Link to={`/map/${id}`}>{id}</Link>
           </li>
         ))}
+        <li>
+          <Link to="/map/new">New Map (empty)</Link>
+        </li>
       </ul>
     </div>
   );
@@ -60,6 +79,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/map/new" element={<NewMapPage />} />
         <Route path="/map/:mapId" element={<MapRoute />} />
       </Routes>
     </BrowserRouter>

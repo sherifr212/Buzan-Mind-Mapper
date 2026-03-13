@@ -18,6 +18,37 @@ export interface CentralImageNodeData {
 function CentralImageNodeComponent({ data }: NodeProps<CentralImageNodeData>) {
   const { image } = data;
 
+  // No central image yet — render a placeholder (LE-001)
+  if (!image) {
+    return (
+      <div
+        data-testid="central-image-placeholder"
+        style={{
+          width: 120,
+          height: 120,
+          borderRadius: 8,
+          border: '2px dashed #ccc',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#aaa',
+          fontSize: 13,
+          fontFamily: 'sans-serif',
+          textAlign: 'center',
+          padding: 8,
+          background: '#fafafa',
+          position: 'relative',
+        }}
+      >
+        <Handle type="source" position={Position.Top} id="top" style={{ opacity: 0 }} />
+        <Handle type="source" position={Position.Right} id="right" style={{ opacity: 0 }} />
+        <Handle type="source" position={Position.Bottom} id="bottom" style={{ opacity: 0 }} />
+        <Handle type="source" position={Position.Left} id="left" style={{ opacity: 0 }} />
+        <span>Set Central Image</span>
+      </div>
+    );
+  }
+
   const style: React.CSSProperties = {
     width: image.size.width,
     height: image.size.height,
