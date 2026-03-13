@@ -1,0 +1,111 @@
+{
+  "format": "bmm",
+  "version": "1.0",
+  "id": "fixture-health-001",
+  "title": "Health Panel Test Map",
+  "orientation": "LANDSCAPE",
+  "createdAt": "2026-03-13T00:00:00.000Z",
+  "updatedAt": "2026-03-13T00:00:00.000Z",
+  "canvasSize": { "width": 1920, "height": 1080 },
+  "colorPalette": ["#E53935", "#43A047", "#FB8C00", "#1565C0"],
+  "centralImage": {
+    "id": "ci-health",
+    "type": "text-image",
+    "src": "HEALTH",
+    "colors": ["#1565C0"],
+    "hasDimension": true,
+    "position": { "x": 900, "y": 480 },
+    "size": { "width": 120, "height": 120 }
+  },
+  "bois": [],
+  "branches": [
+    {
+      "id": "h-b1", "parentId": null, "keyword": "Innovation", "isUpperCase": true,
+      "color": "#1565C0", "lineThickness": 5, "isCurved": true, "length": 80, "angle": 0,
+      "depth": 0, "image": { "id": "img-h1", "type": "text-image", "src": "IMG1",
+        "colors": ["#1565C0"], "hasDimension": false,
+        "position": { "x": 0, "y": 0 }, "size": { "width": 40, "height": 40 } },
+      "hasBoundary": false, "boundaryShape": null, "numericalOrder": null,
+      "codes": [], "blankLine": false, "linkedMapId": null
+    },
+    {
+      "id": "h-b2", "parentId": null, "keyword": "Strategy", "isUpperCase": true,
+      "color": "#E53935", "lineThickness": 5, "isCurved": true, "length": 70, "angle": 1.2566,
+      "depth": 0, "image": { "id": "img-h2", "type": "text-image", "src": "IMG2",
+        "colors": ["#E53935"], "hasDimension": false,
+        "position": { "x": 0, "y": 0 }, "size": { "width": 40, "height": 40 } },
+      "hasBoundary": false, "boundaryShape": null, "numericalOrder": null,
+      "codes": [], "blankLine": false, "linkedMapId": null
+    },
+    {
+      "id": "h-b3", "parentId": null, "keyword": "Vision", "isUpperCase": true,
+      "color": "#43A047", "lineThickness": 5, "isCurved": true, "length": 65, "angle": 2.5133,
+      "depth": 0, "image": { "id": "img-h3", "type": "text-image", "src": "IMG3",
+        "colors": ["#43A047"], "hasDimension": false,
+        "position": { "x": 0, "y": 0 }, "size": { "width": 40, "height": 40 } },
+      "hasBoundary": false, "boundaryShape": null, "numericalOrder": null,
+      "codes": [], "blankLine": false, "linkedMapId": null
+    },
+    {
+      "id": "h-b4", "parentId": null, "keyword": "Growth", "isUpperCase": true,
+      "color": "#FB8C00", "lineThickness": 5, "isCurved": true, "length": 75, "angle": 3.7699,
+      "depth": 0, "image": null,
+      "hasBoundary": false, "boundaryShape": null, "numericalOrder": null,
+      "codes": [], "blankLine": false, "linkedMapId": null
+    },
+    {
+      "id": "h-b5", "parentId": null, "keyword": "", "isUpperCase": false,
+      "color": "#1565C0", "lineThickness": 5, "isCurved": true, "length": 60, "angle": 5.0265,
+      "depth": 0, "image": null,
+      "hasBoundary": false, "boundaryShape": null, "numericalOrder": null,
+      "codes": [], "blankLine": true, "linkedMapId": null
+    },
+    {
+      "id": "h-b3-1", "parentId": "h-b3", "keyword": "Key Idea", "isUpperCase": false,
+      "color": "#43A047", "lineThickness": 2.5, "isCurved": true, "length": 50, "angle": 2.3,
+      "depth": 1, "image": null,
+      "hasBoundary": false, "boundaryShape": null, "numericalOrder": null,
+      "codes": [], "blankLine": false, "linkedMapId": null
+    },
+    {
+      "id": "h-b3-1-1", "parentId": "h-b3-1", "keyword": "Detail", "isUpperCase": false,
+      "color": "#43A047", "lineThickness": 1, "isCurved": true, "length": 40, "angle": 2.3,
+      "depth": 2, "image": null,
+      "hasBoundary": false, "boundaryShape": null, "numericalOrder": null,
+      "codes": [], "blankLine": false, "linkedMapId": null
+    },
+    {
+      "id": "h-b3-1-1-1", "parentId": "h-b3-1-1", "keyword": "Specific", "isUpperCase": false,
+      "color": "#43A047", "lineThickness": 1, "isCurved": true, "length": 35, "angle": 2.3,
+      "depth": 3, "image": null,
+      "hasBoundary": false, "boundaryShape": null, "numericalOrder": null,
+      "codes": [], "blankLine": false, "linkedMapId": null
+    }
+  ],
+  "arrows": [
+    {
+      "id": "arr-1",
+      "sourceNodeId": "h-b1",
+      "targetNodeId": "h-b2",
+      "directionality": "UNI",
+      "arrowStyle": { "size": 2, "form": "solid", "dimension": false },
+      "label": null,
+      "color": "#1565C0"
+    },
+    {
+      "id": "arr-2",
+      "sourceNodeId": "h-b3",
+      "targetNodeId": "h-b4",
+      "directionality": "UNI",
+      "arrowStyle": { "size": 2, "form": "solid", "dimension": false },
+      "label": null,
+      "color": "#43A047"
+    }
+  ],
+  "reviewSchedule": null,
+  "isGroupMap": false,
+  "participants": [],
+  "linkedMaps": [],
+  "numericalOrder": [],
+  "tags": []
+}

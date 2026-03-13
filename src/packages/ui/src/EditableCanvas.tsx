@@ -17,6 +17,7 @@ import { WarnToast } from './WarnToast';
 import { ClarityModal } from './ClarityModal';
 import { CoachToast } from './CoachToast';
 import { BOIWizard } from './BOIWizard';
+import { BuzanHealthPanel } from './BuzanHealthPanel';
 
 // ─── EditableCanvas ───────────────────────────────────────────────────────────
 // Interactive mind map editor built on React Flow.
@@ -314,6 +315,7 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
   const [blankCoachingId, setBlankCoachingId] = useState<string | null>(null);
   const [showBOIWizard, setShowBOIWizard] = useState(false);
   const [colorInheritTooltipId, setColorInheritTooltipId] = useState<string | null>(null);
+  const [showHealthPanel, setShowHealthPanel] = useState(false);
   // Track which lawIds have already been added to coachQueue to avoid duplicates
   const firedCoachIds = useRef<Set<string>>(new Set());
 
@@ -637,6 +639,13 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         >
           ↕ Portrait
         </button>
+        <button
+          onClick={() => setShowHealthPanel((v) => !v)}
+          data-testid="health-panel-open-btn"
+          style={{ padding: '4px 10px', cursor: 'pointer', fontSize: 12, background: '#1e88e5', color: 'white', border: 'none', borderRadius: 4 }}
+        >
+          ❤ Health
+        </button>
         <span data-testid="selected-branch-id" style={{ display: 'none' }}>
           {selectedBranchId ?? ''}
         </span>
@@ -684,6 +693,11 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
               setBlankCoachingId(null);
             }}
           />
+        )}
+
+        {/* Health Panel (HP-001, HP-002, HP-003) */}
+        {showHealthPanel && (
+          <BuzanHealthPanel map={map} />
         )}
 
         {/* WARN toasts */}

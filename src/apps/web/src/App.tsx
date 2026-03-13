@@ -5,6 +5,7 @@ import fixtureEmpty from './fixtures/fixture-empty.bmm.json';
 import fixtureTextCentral from './fixtures/fixture-text-central.bmm.json';
 import fixtureManyBranches from './fixtures/fixture-many-branches.bmm.json';
 import fixtureFlat from './fixtures/fixture-flat.bmm.json';
+import fixtureHealth from './fixtures/fixture-health.bmm.json';
 import type { MindMap } from '@bmm/data-model';
 
 // ─── Fixture registry ─────────────────────────────────────────────────────────
@@ -15,6 +16,7 @@ const FIXTURES: Record<string, MindMap> = {
   'test-fixture-text-central': fixtureTextCentral as unknown as MindMap,
   'test-fixture-many-branches': fixtureManyBranches as unknown as MindMap,
   'test-fixture-flat': fixtureFlat as unknown as MindMap,
+  'test-fixture-health': fixtureHealth as unknown as MindMap,
 };
 
 // ─── Map Editor Page ──────────────────────────────────────────────────────────

@@ -11,3 +11,6 @@ export { WarnToast } from './WarnToast';
 export { ClarityModal } from './ClarityModal';
 export { CoachToast } from './CoachToast';
 export { BOIWizard } from './BOIWizard';
+export { BuzanHealthPanel } from './BuzanHealthPanel';
+export type { BuzanHealthPanelProps, HealthMetrics } from './BuzanHealthPanel';
+export { computeHealthMetrics } from './BuzanHealthPanel';
