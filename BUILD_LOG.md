@@ -1,5 +1,14 @@
 # BUILD LOG — Buzan Mind Mapping Software v1
 
+### [2026-03-14 00:15:00] Sprint 14 — STARTED
+**Status:** STARTED
+**Detail:** Implementing Sprint 14: Backend — ASP.NET Core 8 API with EF Core (InMemory), Identity, JWT auth, CRUD map endpoints with ownership enforcement, Swagger/OpenAPI. NuGet packages added: EF Core 8, Identity, JWT Bearer, Npgsql, InMemory, Swashbuckle, StackExchange.Redis. Created: Data/AppDbContext.cs, Dtos/MapDtos.cs, Dtos/AuthDtos.cs, Services/JwtService.cs. Rewrote Program.cs with full middleware pipeline. Created Bmm.Api.Tests project with SecurityTests.cs covering AT-NF-020 and AT-NF-022.
+
+### [2026-03-14 00:20:00] Sprint 14 — COMPLETED
+**Status:** COMPLETED
+**Detail:** All AT Gate tests pass. HTTPS redirection middleware registered (skipped only in Test environment for WebApplicationFactory compatibility). Map ownership enforced — User B gets HTTP 403 when accessing User A's map. Both tests pass in dotnet test.
+**AT Results:** AT-NF-020 PASSED, AT-NF-022 PASSED. Total: 2/2 passed.
+
 ### [2026-03-14 00:00:01] Sprint 13 — STARTED
 **Status:** STARTED
 **Detail:** Implementing Sprint 13: Onboarding & Progress Tracking. Delivers TutorialFlow (8-step), UserProgressStore (Zustand persist), map-progress-tracker on home screen, post-session reflection prompt, /tutorial route, /map/new locked state for first-time users.
@@ -233,3 +242,11 @@ All 5/5 tests passed.
 ### [2026-03-13 17:30:00] Sprint 13 — STARTED
 **Status:** STARTED
 **Detail:** Sprint 13: Onboarding · Tutorial · 100-Map Tracker. AT Gate: AT-OB-001, AT-OB-002, AT-OB-004, AT-OB-010, AT-OB-011.
+
+### [2026-03-13 18:00:00] Sprint 13 — COMPLETE
+**Status:** COMPLETED
+**AT Results:** AT-OB-001: PASS, AT-OB-002: PASS, AT-OB-004: PASS, AT-OB-010: PASS, AT-OB-011: PASS
+
+### [2026-03-13 18:05:00] Sprint 14 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 14: Backend — ASP.NET Core API · PostgreSQL · Redis · Auth. AT Gate: AT-NF-020, AT-NF-022.
