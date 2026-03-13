@@ -54,10 +54,11 @@ export interface EditableBranchNodeData {
   editing: boolean;
   onEditCommit: (branchId: string, keyword: string) => void;
   onBlankClick: (branchId: string) => void;
+  sequenceOrder?: number;
 }
 
 function EditableBranchNodeComponent({ data }: NodeProps<EditableBranchNodeData>) {
-  const { branch, angle, selected, editing, onEditCommit, onBlankClick } = data;
+  const { branch, angle, selected, editing, onEditCommit, onBlankClick, sequenceOrder } = data;
   const inputRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState(branch.keyword);
 
@@ -143,6 +144,29 @@ function EditableBranchNodeComponent({ data }: NodeProps<EditableBranchNodeData>
         />
       ) : (
         label
+      )}
+      {sequenceOrder !== undefined && (
+        <span
+          data-testid={`sequence-badge-${branch.id}`}
+          style={{
+            position: 'absolute',
+            top: -10,
+            right: -10,
+            background: '#1e293b',
+            color: 'white',
+            borderRadius: '50%',
+            width: 20,
+            height: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 11,
+            fontWeight: 'bold',
+            zIndex: 10,
+          }}
+        >
+          {sequenceOrder}
+        </span>
       )}
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
     </div>
@@ -272,6 +296,37 @@ function TextImageCoaching() {
   );
 }
 
+// ─── generateLinearOutline ────────────────────────────────────────────────────
+
+function generateLinearOutline(map: MindMap): string {
+  const bois = map.branches
+    .filter((b) => b.parentId === null)
+    .slice()
+    .sort((a, b) => {
+      const oa = a.numericalOrder ?? Infinity;
+      const ob = b.numericalOrder ?? Infinity;
+      if (oa !== ob) return oa - ob;
+      return map.branches.indexOf(a) - map.branches.indexOf(b);
+    });
+
+  let result = '';
+  bois.forEach((boi, idx) => {
+    const num = boi.numericalOrder ?? idx + 1;
+    result += `${num}. ${boi.keyword}\n`;
+    // Direct children (depth 1)
+    const children = map.branches.filter((b) => b.parentId === boi.id);
+    children.forEach((child) => {
+      result += `  - ${child.keyword}\n`;
+      // Grandchildren (depth 2)
+      const grandchildren = map.branches.filter((b) => b.parentId === child.id);
+      grandchildren.forEach((gc) => {
+        result += `    - ${gc.keyword}\n`;
+      });
+    });
+  });
+  return result;
+}
+
 // ─── EditableCanvas ───────────────────────────────────────────────────────────
 
 export interface EditableCanvasProps {
@@ -310,6 +365,11 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
     addCoachTip,
     addTimedWarn,
     populateBOIs,
+    // Sequence & Cluster
+    sequenceMode,
+    toggleSequenceMode,
+    assignNumericalOrder,
+    markClusterComplete,
   } = useMapStore();
 
   const [blankCoachingId, setBlankCoachingId] = useState<string | null>(null);
@@ -317,6 +377,12 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
   const [colorInheritTooltipId, setColorInheritTooltipId] = useState<string | null>(null);
   const [showHealthPanel, setShowHealthPanel] = useState(false);
   const [colourBlindMode, setColourBlindMode] = useState(false);
+  // Context menu state for right-click BOI actions
+  const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
+  // Sequence mode: track next order to assign on click
+  const [nextOrder, setNextOrder] = useState(1);
+  // Outline export modal
+  const [outlineText, setOutlineText] = useState<string | null>(null);
   // Track which lawIds have already been added to coachQueue to avoid duplicates
   const firedCoachIds = useRef<Set<string>>(new Set());
 
@@ -472,6 +538,23 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
     ? computeLayout(map, canvasSize.width, canvasSize.height)
     : new Map();
 
+  // Build a sequence order map for BOIs when sequence mode is active
+  const boiSequenceMap = new Map<string, number>();
+  if (sequenceMode) {
+    const bois = map.branches
+      .filter((b) => b.parentId === null)
+      .slice()
+      .sort((a, b) => {
+        const oa = a.numericalOrder ?? Infinity;
+        const ob = b.numericalOrder ?? Infinity;
+        if (oa !== ob) return oa - ob;
+        return map.branches.indexOf(a) - map.branches.indexOf(b);
+      });
+    bois.forEach((boi, idx) => {
+      boiSequenceMap.set(boi.id, boi.numericalOrder ?? idx + 1);
+    });
+  }
+
   const branchNodes: Node[] = map.branches.map((branch: BranchNode) => {
     const computed = positions.get(branch.id) ?? { id: branch.id, x: centreX, y: centreY };
     const custom = nodePositions[branch.id];
@@ -479,6 +562,9 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
     const displayBranch = colourBlindMode
       ? { ...branch, color: applyColourBlindTransform(branch.color) }
       : branch;
+    const sequenceOrder = sequenceMode && branch.parentId === null
+      ? boiSequenceMap.get(branch.id)
+      : undefined;
     return {
       id: branch.id,
       type: 'branchLabel',
@@ -490,6 +576,7 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         editing: branch.id === editingBranchId,
         onEditCommit: handleEditCommit,
         onBlankClick: handleBlankClick,
+        sequenceOrder,
       } satisfies EditableBranchNodeData,
       draggable: true,
       selectable: true,
@@ -515,7 +602,22 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
 
   const onNodeClick: NodeMouseHandler = (_event, node) => {
     if (node.id === 'central-image') { selectBranch(null); return; }
+    // In sequence mode, assign the next numerical order to the clicked BOI
+    if (sequenceMode) {
+      const branch = map.branches.find((b) => b.id === node.id);
+      if (branch && branch.parentId === null) {
+        assignNumericalOrder(node.id, nextOrder);
+        setNextOrder((n) => n + 1);
+        return;
+      }
+    }
     selectBranch(node.id);
+  };
+
+  const onNodeContextMenu: NodeMouseHandler = (event, node) => {
+    event.preventDefault();
+    if (node.id === 'central-image') return;
+    setContextMenu({ nodeId: node.id, x: event.clientX, y: event.clientY });
   };
 
   const onNodeDoubleClick: NodeMouseHandler = (_event, node) => {
@@ -529,8 +631,6 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
       updateNodePosition(node.id, node.position.x, node.position.y);
     }
   };
-
-  const onPaneClick = () => selectBranch(null);
 
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -553,6 +653,42 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         <span style={{ fontSize: 12, opacity: 0.7 }} data-testid="branch-count">
           Branches: {map.branches.length}
         </span>
+        <button
+          onClick={() => {
+            toggleSequenceMode();
+            setNextOrder(1);
+          }}
+          data-testid="sequence-mode-toggle"
+          aria-pressed={sequenceMode}
+          style={{
+            padding: '4px 10px',
+            cursor: 'pointer',
+            fontSize: 12,
+            background: sequenceMode ? '#7c3aed' : '#455a64',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+          }}
+        >
+          🔢 Sequence
+        </button>
+        <button
+          onClick={() => {
+            if (map) setOutlineText(generateLinearOutline(map));
+          }}
+          data-testid="export-outline-btn"
+          style={{
+            padding: '4px 10px',
+            cursor: 'pointer',
+            fontSize: 12,
+            background: '#0f766e',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+          }}
+        >
+          📋 Export Outline
+        </button>
         <button
           onClick={() => addBlankLine(selectedBranchId)}
           data-testid="add-branch"
@@ -698,7 +834,8 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
           onNodeClick={onNodeClick}
           onNodeDoubleClick={onNodeDoubleClick}
           onNodeDragStop={onNodeDragStop}
-          onPaneClick={onPaneClick}
+          onNodeContextMenu={onNodeContextMenu}
+          onPaneClick={() => { selectBranch(null); setContextMenu(null); }}
           fitView
           fitViewOptions={{ padding: 0.1 }}
           proOptions={{ hideAttribution: true }}
@@ -729,6 +866,110 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         {/* Health Panel (HP-001, HP-002, HP-003) */}
         {showHealthPanel && (
           <BuzanHealthPanel map={map} />
+        )}
+
+        {/* Right-click context menu */}
+        {contextMenu && (
+          <div
+            data-testid="node-context-menu"
+            style={{
+              position: 'fixed',
+              top: contextMenu.y,
+              left: contextMenu.x,
+              background: 'white',
+              border: '1px solid #ccc',
+              borderRadius: 6,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+              zIndex: 3000,
+              minWidth: 220,
+              padding: '4px 0',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              data-testid="ctx-mark-cluster-complete"
+              onClick={() => {
+                const nodeId = contextMenu.nodeId;
+                setContextMenu(null);
+                const confirmed = window.confirm('Draw a boundary around this cluster?');
+                if (confirmed) {
+                  markClusterComplete(nodeId);
+                }
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 16px',
+                background: 'none',
+                border: 'none',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: 13,
+              }}
+            >
+              Mark cluster as complete
+            </button>
+          </div>
+        )}
+
+        {/* Outline export modal */}
+        {outlineText !== null && (
+          <div
+            data-testid="outline-export-modal"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 4000,
+            }}
+          >
+            <div
+              style={{
+                background: 'white',
+                borderRadius: 8,
+                padding: 24,
+                maxWidth: 600,
+                width: '90%',
+                maxHeight: '80vh',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                <h3 style={{ margin: 0, fontSize: 16 }}>Linear Outline Export</h3>
+                <button
+                  data-testid="outline-export-close"
+                  onClick={() => setOutlineText(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}
+                >
+                  ×
+                </button>
+              </div>
+              <pre
+                data-testid="outline-export-text"
+                style={{
+                  flex: 1,
+                  overflow: 'auto',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 4,
+                  padding: 16,
+                  fontFamily: 'monospace',
+                  fontSize: 13,
+                  whiteSpace: 'pre-wrap',
+                }}
+              >
+                {outlineText}
+              </pre>
+            </div>
+          </div>
         )}
 
         {/* WARN toasts */}

@@ -74,6 +74,10 @@ export interface MapStoreState {
   /** COACH tips queue (non-blocking, timed). */
   coachQueue: CoachItem[];
 
+  // ─── Sequence & Cluster state ──────────────────────────────────────────────
+  /** Whether Sequence Mode is active (numbered BOI badges). */
+  sequenceMode: boolean;
+
   loadMap: (map: MindMap) => void;
   selectBranch: (id: string | null) => void;
   setEditingBranch: (id: string | null) => void;
@@ -96,6 +100,11 @@ export interface MapStoreState {
   addCoachTip: (tip: Omit<CoachItem, 'id'>) => void;
   addTimedWarn: (warn: Omit<WarnItem, 'id'>) => void;
   populateBOIs: (keywords: string[]) => void;
+
+  // ─── Sequence & Cluster actions ────────────────────────────────────────────
+  toggleSequenceMode: () => void;
+  assignNumericalOrder: (branchId: string, order: number) => void;
+  markClusterComplete: (branchId: string) => void;
 }
 
 /** Push current map onto past stack before a mutation. */
@@ -173,6 +182,7 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
   warnQueue: [],
   clarityModal: null,
   coachQueue: [],
+  sequenceMode: false,
 
   loadMap: (map) =>
     set({
@@ -519,4 +529,41 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
     // setOrientation doesn't use get() internally — call through the store
     void get;
   },
+
+  // ─── Sequence & Cluster actions ───────────────────────────────────────────
+
+  toggleSequenceMode: () =>
+    set((state) => ({ sequenceMode: !state.sequenceMode })),
+
+  assignNumericalOrder: (branchId, order) =>
+    set((state) => {
+      if (!state.map) return state;
+      return {
+        map: {
+          ...state.map,
+          branches: state.map.branches.map((b) =>
+            b.id === branchId ? { ...b, numericalOrder: order } : b
+          ),
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    }),
+
+  markClusterComplete: (branchId) =>
+    set((state) => {
+      if (!state.map) return state;
+      const hist = pushHistory(state);
+      return {
+        ...hist,
+        map: {
+          ...state.map,
+          branches: state.map.branches.map((b) =>
+            b.id === branchId
+              ? { ...b, hasBoundary: true, boundaryShape: 'M 0 0 ellipse' }
+              : b
+          ),
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    }),
 }));

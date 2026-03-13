@@ -184,3 +184,17 @@
 - AT-CS-009: PASS (E2E — Colour-blindness mode transforms red/green)
 - AT-LE-070: PASS (E2E — Personal Style Mode locked until 3 maps completed)
 - AT-LE-022: PASS (E2E — Colour inheritance blocked on sub-branches, not broken)
+
+### [2026-03-13 15:35:00] Sprint 11 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 11: Hierarchy Tools — Outline View · Boundaries · Sequence Mode. AT Gate: AT-LE-081 (already passing), AT-LE-083, AT-LE-090, AT-LE-091.
+**AT Results:** N/A
+
+### [2026-03-13 16:00:00] Sprint 11 — AT_GATE_RESULTS
+**Status:** COMPLETED
+**Detail:** All 4 AT Gate tests passing. HierarchyOutlineView skipped (not in AT gate), boundary auto-draw via context menu, Sequence Mode with number badges, linear outline export modal.
+**AT Results:**
+- AT-LE-081: PASS (E2E — BOI Wizard still working, not broken)
+- AT-LE-083: PASS (E2E — Right-click BOI → Mark complete → boundary drawn)
+- AT-LE-090: PASS (E2E — Sequence Mode shows number badges on BOIs)
+- AT-LE-091: PASS (E2E — Export outline generates linear document)
