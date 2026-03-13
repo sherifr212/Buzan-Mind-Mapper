@@ -1,4 +1,7 @@
 // @bmm/ui — Shared UI components
-// Sprint 0 scaffold: empty, will be populated in Sprint 5
 
-export {};
+export { useMapStore } from './MapStore';
+export type { MapStoreState } from './MapStore';
+
+export { EditableCanvas } from './EditableCanvas';
+export type { EditableCanvasProps } from './EditableCanvas';

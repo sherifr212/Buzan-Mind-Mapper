@@ -106,3 +106,17 @@
 ### [2026-03-13 13:15:00] Sprint 5 — COMPLETE
 **Status:** COMPLETED
 **Detail:** All Sprint 5 deliverables committed. Depth-based thickness/font scales, uppercase BOI, angle flip, colour inheritance stories all implemented.
+
+### [2026-03-13 13:16:00] Sprint 6 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 6: Core Editing — Add/Edit/Delete/Drag/Undo. Creating Zustand MapStore, EditableCanvas, wiring keyboard events, and Playwright E2E tests.
+**AT Results:** N/A
+
+### [2026-03-13 13:30:00] Sprint 6 — IMPLEMENTATION
+**Status:** COMPLETED
+**Detail:** Created @bmm/ui: MapStore (Zustand, MindMap state + unlimited undo/redo past/future stack, addChildBranch/addSiblingBranch/deleteBranch/addBlankLine/updateKeyword/updateNodePosition). EditableCanvas (React Flow, Tab=child, Enter=sibling, Delete=remove, F2/dblclick=edit, drag-to-reposition, Ctrl+Z/Shift+Z, toolbar with Undo/Redo/Add-Blank-Line buttons, BlankBranchCoaching overlay). App.tsx updated: BrowserRouter + Routes (home + /map/:mapId), fixture registry, MapRoute. Playwright E2E tests: editing.spec.ts 7 tests. Fixed: toolbar layout (was outside viewport, now flex column), stable nodeTypes at module scope, keyboard handler reads store state directly (avoids stale closure). Both smoke test and 7 E2E tests PASS (8/8 total).
+**AT Results:** AT-ED-001 PASS · AT-ED-002 PASS · AT-ED-003 PASS · AT-ED-010 PASS · AT-ED-011 PASS · AT-ED-030 PASS · AT-ED-031 PASS
+
+### [2026-03-13 13:31:00] Sprint 6 — COMPLETE
+**Status:** COMPLETED
+**Detail:** All 7 E2E editing tests passing. MapStore and EditableCanvas committed.

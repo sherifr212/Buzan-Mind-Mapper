@@ -10,8 +10,12 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
+    "@bmm/canvas": "*",
+    "@bmm/data-model": "*",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "reactflow": "^11.11.0",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",

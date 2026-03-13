@@ -17,7 +17,8 @@
     "@bmm/enforcement": "*",
     "@bmm/ui": "*",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "react-router-dom": "^7.13.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",
