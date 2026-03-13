@@ -1,0 +1,42 @@
+**********************
+PowerShell transcript start
+Start time: 20260313092532
+Username: PROTON\sheri
+RunAs User: PROTON\sheri
+Configuration Name: 
+Machine: PROTON (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll -NoLogo -NoProfile -NoExit -Command Remove-Module -Name PSReadline;$global:_warpOriginalPrompt = $function:global:prompt;if ($PSEdition -eq 'Desktop' -or $IsWindows) {;    $EP = [Microsoft.PowerShell.ExecutionPolicy];    if ((Get-ExecutionPolicy -Scope MachinePolicy) -eq $EP::Restricted -or (Get-ExecutionPolicy -Scope UserPolicy) -eq $EP::Restricted) {;        Write-Error 'ExecutionPolicy is Restricted. Unable to Warpify this PowerShell session.';    } elseif ((Get-ExecutionPolicy) -eq $EP::Restricted -and (Get-ExecutionPolicy -Scope MachinePolicy) -eq $EP::Undefined -and (Get-ExecutionPolicy -Scope UserPolicy) -eq $EP::Undefined) {;        $global:_warp_PSProcessExecPolicy = $(Get-ExecutionPolicy -Scope Process);        Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force;    };};function prompt {;    $function:global:prompt = $global:_warpOriginalPrompt;    $username = [Environment]::UserName;    $epoch = [int](New-TimeSpan -Start ([DateTime]::new(1970, 1, 1, 0, 0, 0, 0)) -End ([DateTime]::UtcNow)).TotalSeconds;    $random = Get-Random -Maximum 32768;    $global:_warpSessionId = [int64]"$epoch$random";    $msg = ConvertTo-Json -Compress -InputObject @{ hook = 'InitShell'; value = @{ session_id = $_warpSessionId; shell = 'pwsh'; user = $username; hostname = [System.Net.Dns]::GetHostName() } };    $encodedMsg = [BitConverter]::ToString([System.Text.Encoding]::UTF8.GetBytes($msg)).Replace('-', '');    $oscStart = "$([char]0x1b)]9278;";    $oscEnd = "`a";    $oscJsonMarker = 'd';    $oscParameterSeparator = ';';    Write-Host "${oscStart}${oscJsonMarker}${oscParameterSeparator}${encodedMsg}${oscEnd}";    return $null;}
+Process ID: 20616
+PSVersion: 7.5.4
+PSEdition: Core
+GitCommitId: 7.5.4
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is .\BUILD_TERMINAL_2026-03-13_09-25-32.txt
+2026-03-13 09:25:32  ════════════════════════════════════════════════════
+2026-03-13 09:25:32    BUZAN MIND MAPPING — AUTONOMOUS BUILD RUNNER
+2026-03-13 09:25:32  ════════════════════════════════════════════════════
+2026-03-13 09:25:32  Runner log:   .\BUILD_RUNNER_2026-03-13_09-25-32.txt
+2026-03-13 09:25:32  Terminal log: .\BUILD_TERMINAL_2026-03-13_09-25-32.txt
+2026-03-13 09:25:32
+2026-03-13 09:25:32  Pre-flight: all required files present.
+fatal: your current branch 'master' does not have any commits yet
+fatal: your current branch 'master' does not have any commits yet
+2026-03-13 09:25:32
+2026-03-13 09:25:32  ── Session 1 starting (last completed sprint: -1) ──
+2026-03-13 09:25:32  Launching Claude Code with --dangerously-skip-permissions
+2026-03-13 09:25:32
+PS>TerminatingError(): "The pipeline has been stopped."
+>> TerminatingError(): "The pipeline has been stopped."
+>> TerminatingError(): "The pipeline has been stopped."
+]9278;d;7B2276616C7565223A7B22657869745F636F6465223A2D312C226E6578745F626C6F636B5F6964223A22707265636D642D3137373333383636373533303236392D35227D2C22686F6F6B223A22436F6D6D616E6446696E6973686564227D
+]9279
+]9278;d;7B2276616C7565223A7B2273657373696F6E5F6964223A3137373333383636373533303236392C226B7562655F636F6E666967223A22222C22707764223A22443A5C5C5265706F5C5C72616469616E745C5C72616469616E742D6D696E642D31222C227270726F6D7074223A22222C226E6F64655F76657273696F6E223A22222C22636F6E64615F656E76223A22222C22707331223A22222C227669727475616C5F656E76223A22222C226769745F6272616E6368223A226D6173746572222C22686F6E6F725F707331223A66616C73657D2C22686F6F6B223A22507265636D64227D
+]133;APS D:\Repo\radiant\radiant-mind-1> ]133;B]9279
+]9278;d;7B2276616C7565223A7B22627566666572223A22227D2C22686F6F6B223A22496E707574427566666572227D
+[2K
