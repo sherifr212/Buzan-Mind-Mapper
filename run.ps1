@@ -56,7 +56,7 @@ function Invoke-ClaudeStreaming {
 
         if ($chromaToken) { $env:CHROMATIC_PROJECT_TOKEN = $chromaToken }
 
-        & claude --dangerously-skip-permissions --print "$p" --output-format stream-json --max-turns $mt 2>&1 |
+        & claude --dangerously-skip-permissions --print "$p" --output-format stream-json --verbose --max-turns $mt 2>&1 |
         ForEach-Object {
             Add-Content -Path $rj -Value $_ -Encoding UTF8
             $_
@@ -78,7 +78,8 @@ function Invoke-ClaudeStreaming {
 
             foreach ($raw in $output) {
                 try {
-                    $ev = $raw | ConvertFrom-Json -ErrorAction Stop
+                    $rawStr = [string]$raw
+                    $ev = $rawStr | ConvertFrom-Json -ErrorAction Stop
 
                     switch ($ev.type) {
 
@@ -130,12 +131,12 @@ function Invoke-ClaudeStreaming {
                         }
 
                         default {
-                            Log "  [EVT:$($ev.type)] $raw" "DarkGray"
+                            Log "  [EVT:$($ev.type)] $rawStr" "DarkGray"
                         }
                     }
                 }
                 catch {
-                    if ($raw.Trim()) { Log "  $raw" "DarkYellow" }
+                    if (([string]$raw).Trim()) { Log "  $([string]$raw)" "DarkYellow" }
                 }
             }
 
@@ -144,7 +145,7 @@ function Invoke-ClaudeStreaming {
         }
 
         Receive-Job -Job $script:claudeJob | ForEach-Object {
-            if ($_.Trim()) { Log "  $_" "DarkYellow" }
+            if (([string]$_).Trim()) { Log "  $([string]$_)" "DarkYellow" }
         }
     }
     finally {
@@ -202,14 +203,14 @@ try {
         Log "CSharpier pre-commit hook: registered." "Green"
     }
 
-    # CSharpier — verified via dotnet CLI which handles global tool dispatch
-    $csharpierVer = dotnet csharpier --version 2>$null
-    if (-not $csharpierVer) {
-        Log "ERROR: CSharpier not found. Install it with:" "Red"
+    # CSharpier — check via dotnet tool list (the only reliable detection method)
+    $csharpierEntry = dotnet tool list --global 2>$null | Select-String -Pattern 'csharpier'
+    if (-not $csharpierEntry) {
+        Log "ERROR: CSharpier not found in dotnet global tools. Install it with:" "Red"
         Log "       dotnet tool install --global csharpier" "Yellow"
         Stop-Transcript; exit 1
     }
-    Log "CSharpier: $csharpierVer" "Green"
+    Log "CSharpier: $($csharpierEntry.ToString().Trim())" "Green"
 
     # Git identity
     $gitName  = git config user.name  2>$null
