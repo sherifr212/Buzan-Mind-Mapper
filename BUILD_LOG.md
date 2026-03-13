@@ -49,3 +49,22 @@
 **Status:** COMPLETED
 **Detail:** All 16 AT-DM tests passing. Zero TypeScript errors in @bmm/data-model. Committing.
 
+
+### [2026-03-13 00:10:00] Sprint 2 — STARTED
+**Status:** STARTED
+**Detail:** Beginning Sprint 2: Enforcement Engine — Emphasis Laws.
+**AT Results:** N/A
+
+### [2026-03-13 00:11:00] Sprint 2 — IMPLEMENTATION
+**Status:** COMPLETED
+**Detail:** Implemented @bmm/enforcement: EnforcementEngine.check(), EnforcementResult type, EditEvent type. Rules: checkCentralImage (LE-001), checkCentralImageColours (LE-003), checkBranchImageDensity (LE-010), computeImageDensityRatio (LE-012), checkDuplicateBoiColours (LE-020), checkMinimumColours (LE-021), checkColourInheritance (LE-022), checkSizeVariation (LE-030/031). Zero TypeScript errors.
+**AT Results:** N/A
+
+### [2026-03-13 00:12:00] Sprint 2 — AT GATE
+**Status:** COMPLETED
+**Detail:** 13/13 Vitest tests pass covering AT-LE-001(unit), AT-LE-003, AT-LE-003b, AT-LE-011, AT-LE-020, AT-LE-021, AT-LE-022b.
+**AT Results:** AT-LE-001(unit) PASS · AT-LE-003 PASS · AT-LE-003b PASS · AT-LE-011 PASS · AT-LE-020 PASS · AT-LE-021 PASS · AT-LE-022b PASS
+
+### [2026-03-13 00:13:00] Sprint 2 — COMPLETE
+**Status:** COMPLETED
+**Detail:** All 7 AT-LE unit tests passing. EnforcementEngine importable from @bmm/enforcement with zero TypeScript errors.
