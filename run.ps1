@@ -202,11 +202,11 @@ try {
         Log "CSharpier pre-commit hook: registered." "Green"
     }
 
-    # CSharpier binary — checked via dotnet tool dispatch, no PATH dependency
-    $csharpierVer = dotnet tool run csharpier --version 2>$null
+    # CSharpier — verified via dotnet CLI which handles global tool dispatch
+    $csharpierVer = dotnet csharpier --version 2>$null
     if (-not $csharpierVer) {
-        Log "ERROR: CSharpier not found as a dotnet global tool." "Red"
-        Log "       Run: dotnet tool install --global csharpier" "Yellow"
+        Log "ERROR: CSharpier not found. Install it with:" "Red"
+        Log "       dotnet tool install --global csharpier" "Yellow"
         Stop-Transcript; exit 1
     }
     Log "CSharpier: $csharpierVer" "Green"
