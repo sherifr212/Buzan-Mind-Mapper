@@ -8,6 +8,12 @@ import {
   checkMinimumColours,
   checkSizeVariation,
 } from './rules/emphasis.js';
+import {
+  checkOrientationIsLandscape,
+  checkKeywordAngle,
+  checkBranchCountWithoutImages,
+  checkHierarchy,
+} from './rules/clarity.js';
 
 // ─── EnforcementEngine ────────────────────────────────────────────────────────
 
@@ -45,6 +51,18 @@ export class EnforcementEngine {
 
     // LE-030/031: Size variation
     results.push(...checkSizeVariation(map));
+
+    // LE-062: Orientation
+    results.push(...checkOrientationIsLandscape(map.orientation));
+
+    // LE-066: Keyword angle
+    results.push(...checkKeywordAngle(map));
+
+    // LE-067: 12+ branches no images
+    results.push(...checkBranchCountWithoutImages(map));
+
+    // LE-082: Flat hierarchy
+    results.push(...checkHierarchy(map));
 
     return results;
   }
