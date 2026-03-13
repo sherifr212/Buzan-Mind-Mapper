@@ -14,3 +14,5 @@ export { BOIWizard } from './BOIWizard';
 export { BuzanHealthPanel } from './BuzanHealthPanel';
 export type { BuzanHealthPanelProps, HealthMetrics } from './BuzanHealthPanel';
 export { computeHealthMetrics } from './BuzanHealthPanel';
+export { PersonalStyleMode } from './PersonalStyleMode';
+export type { PersonalStyleModeProps } from './PersonalStyleMode';

@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route, Link, useParams } from 'react-router-dom';
-import { EditableCanvas } from '@bmm/ui';
+import { BrowserRouter, Routes, Route, Link, useParams, useSearchParams } from 'react-router-dom';
+import { EditableCanvas, PersonalStyleMode } from '@bmm/ui';
 import fixtureSimple from './fixtures/fixture-simple.bmm.json';
 import fixtureEmpty from './fixtures/fixture-empty.bmm.json';
 import fixtureTextCentral from './fixtures/fixture-text-central.bmm.json';
@@ -76,6 +76,21 @@ function HomePage() {
   );
 }
 
+// ─── Personal Style Page ──────────────────────────────────────────────────────
+
+function PersonalStylePage() {
+  const [searchParams] = useSearchParams();
+  const mapsCompleted = parseInt(searchParams.get('maps') ?? '0', 10) || 0;
+  return (
+    <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: 480, margin: '0 auto' }}>
+      <PersonalStyleMode mapsCompleted={mapsCompleted} />
+      <p style={{ marginTop: 16 }}>
+        <Link to="/">← Home</Link>
+      </p>
+    </div>
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
@@ -85,6 +100,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/map/new" element={<NewMapPage />} />
         <Route path="/map/:mapId" element={<MapRoute />} />
+        <Route path="/personal-style" element={<PersonalStylePage />} />
       </Routes>
     </BrowserRouter>
   );

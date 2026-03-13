@@ -316,6 +316,7 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
   const [showBOIWizard, setShowBOIWizard] = useState(false);
   const [colorInheritTooltipId, setColorInheritTooltipId] = useState<string | null>(null);
   const [showHealthPanel, setShowHealthPanel] = useState(false);
+  const [colourBlindMode, setColourBlindMode] = useState(false);
   // Track which lawIds have already been added to coachQueue to avoid duplicates
   const firedCoachIds = useRef<Set<string>>(new Set());
 
@@ -426,6 +427,16 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
     setBlankCoachingId(branchId);
   }, []);
 
+  function applyColourBlindTransform(color: string): string {
+    switch (color) {
+      case '#E53935': return '#1565C0';
+      case '#FF0000': return '#0000FF';
+      case '#43A047': return '#FB8C00';
+      case '#4CAF50': return '#FF9800';
+      default: return color;
+    }
+  }
+
   if (!map) return <div data-testid="canvas-loading">Loading…</div>;
 
   const hasCentralImage = Boolean(map.centralImage);
@@ -465,12 +476,15 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
     const computed = positions.get(branch.id) ?? { id: branch.id, x: centreX, y: centreY };
     const custom = nodePositions[branch.id];
     const pos = custom ?? { x: computed.x, y: computed.y };
+    const displayBranch = colourBlindMode
+      ? { ...branch, color: applyColourBlindTransform(branch.color) }
+      : branch;
     return {
       id: branch.id,
       type: 'branchLabel',
       position: pos,
       data: {
-        branch,
+        branch: displayBranch,
         angle: branch.angle,
         selected: branch.id === selectedBranchId,
         editing: branch.id === editingBranchId,
@@ -638,6 +652,23 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
           title="Buzan recommends landscape — this will be blocked"
         >
           ↕ Portrait
+        </button>
+        <button
+          onClick={() => setColourBlindMode((v) => !v)}
+          data-testid="colour-blind-toggle"
+          style={{
+            padding: '4px 10px',
+            cursor: 'pointer',
+            fontSize: 12,
+            background: colourBlindMode ? '#1565C0' : '#455a64',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+          }}
+          aria-pressed={colourBlindMode}
+          title="Toggle colour-blindness accessibility mode"
+        >
+          ♿ A11y
         </button>
         <button
           onClick={() => setShowHealthPanel((v) => !v)}

@@ -169,3 +169,18 @@
 - AT-HP-003: PASS (UNIT — Radiant Score reflects compliance level)
 - AT-LE-071: PASS (UNIT — C1+ Tracker computes delta between consecutive maps)
 - AT-LE-071b: PASS (UNIT — C1+ Tracker does not celebrate regression)
+
+### [2026-03-13 15:05:00] Sprint 10 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 10: Colour System · Accessibility · Personal Style Mode. Implementing colour palette auto-assignment test, colour health warning, colour-blindness mode, Personal Style Mode lock. AT Gate: AT-CS-003, AT-CS-008, AT-CS-009, AT-LE-070, AT-LE-022.
+**AT Results:** N/A
+
+### [2026-03-13 15:30:00] Sprint 10 — AT_GATE_RESULTS
+**Status:** COMPLETED
+**Detail:** All 5 AT Gate tests passing. ColourHealth rule added, colour-blindness mode toggle implemented, PersonalStyleMode component with map-count gating, all E2E and unit tests green.
+**AT Results:**
+- AT-CS-003: PASS (UNIT — Colour palette auto-assigned to new BOIs)
+- AT-CS-008: PASS (UNIT — Colour health warning for unrelated branches)
+- AT-CS-009: PASS (E2E — Colour-blindness mode transforms red/green)
+- AT-LE-070: PASS (E2E — Personal Style Mode locked until 3 maps completed)
+- AT-LE-022: PASS (E2E — Colour inheritance blocked on sub-branches, not broken)

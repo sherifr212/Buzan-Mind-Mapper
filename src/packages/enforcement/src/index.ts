@@ -6,3 +6,4 @@ export * from './rules/emphasis.js';
 export * from './rules/clarity.js';
 export * from './c1Plus.js';
 export * from './radiantScore.js';
+export * from './rules/colourHealth.js';
