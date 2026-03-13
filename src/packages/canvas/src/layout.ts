@@ -1,4 +1,5 @@
 import type { MindMap, BranchNode } from '@bmm/data-model';
+import { BOI_RADIUS, SUB_BRANCH_LENGTH } from './constants';
 
 // ─── Radial Auto-Layout ────────────────────────────────────────────────────────
 // Distributes BOI branches evenly around the central image,
@@ -9,9 +10,6 @@ export interface NodePosition {
   x: number;
   y: number;
 }
-
-const BOI_RADIUS = 300; // pixels from centre
-const SUB_BRANCH_LENGTH = 150;
 
 /**
  * Computes positions for all branches in a MindMap using radial auto-layout.

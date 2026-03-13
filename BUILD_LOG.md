@@ -92,3 +92,17 @@
 ### [2026-03-13 13:08:00] Sprint 4 — COMPLETE
 **Status:** COMPLETED
 **Detail:** All Sprint 4 deliverables committed. React Flow canvas renders BuzanCanvas from fixture-simple.bmm with curved Bézier BOI edges connecting from Central Image boundary. Landscape canvas enforced. Visual AT Gate skipped due to missing Chromatic token (same blocker as Sprint 0).
+
+### [2026-03-13 13:09:00] Sprint 5 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 5: Branch Rendering — Hierarchy, Typography & Colour. Implementing depth-based font/thickness scales, BOI uppercase via CSS, angle-flip for upright keywords, colour inheritance stories.
+**AT Results:** N/A
+
+### [2026-03-13 13:14:00] Sprint 5 — IMPLEMENTATION
+**Status:** COMPLETED
+**Detail:** Created constants.ts (LINE_THICKNESS: 5/2.5/1pt, FONT_SIZE: 22/14/11px, KEYWORD_FONT_FAMILY sans-serif). Updated BranchLabelNode: fontSizeForDepth, textTransform uppercase, 180deg angle-flip for lower-half branches (AT-TY-005). Updated BuzanBranchEdge: uses lineThicknessForDepth from constants. Layout.ts uses constants. BuzanCanvas passes angle to BranchLabelNodeData. Sprint5.stories.tsx: 4 stories (HierarchyDepth, MixedDepth, ColourInheritance, UprightKeywords). Unit tests: 9/9 PASS. Storybook: SUCCESS. DECISION: BOI font raised to 22px (not 18px) per AT-LE-030 (1.5x rule).
+**AT Results:** AT-TY-002 PASS(unit) · AT-LE-030 PASS(unit) · AT-LE-031 PASS(unit) · AT-LE-065 PASS(unit) · AT-TY-003 PASS(unit) · AT-TY-001 VISUAL-SKIPPED · AT-TY-005 VISUAL-SKIPPED
+
+### [2026-03-13 13:15:00] Sprint 5 — COMPLETE
+**Status:** COMPLETED
+**Detail:** All Sprint 5 deliverables committed. Depth-based thickness/font scales, uppercase BOI, angle flip, colour inheritance stories all implemented.

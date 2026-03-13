@@ -69,14 +69,14 @@ export function BuzanCanvas({ map }: BuzanCanvasProps) {
       draggable: false,
     };
 
-    // Branch nodes
+    // Branch nodes — pass angle so BranchLabelNode can flip text (AT-TY-005)
     const branchNodes: Node[] = map.branches.map((branch: BranchNode) => {
       const pos = positions.get(branch.id) ?? { id: branch.id, x: centreX, y: centreY };
       return {
         id: branch.id,
         type: 'branchLabel',
         position: { x: pos.x, y: pos.y },
-        data: { branch },
+        data: { branch, angle: branch.angle },
         draggable: false,
       };
     });

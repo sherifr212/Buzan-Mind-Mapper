@@ -14,3 +14,13 @@ export type { BranchLabelNodeData } from './BranchLabelNode';
 
 export { computeLayout } from './layout';
 export type { NodePosition } from './layout';
+
+export {
+  lineThicknessForDepth,
+  fontSizeForDepth,
+  LINE_THICKNESS,
+  FONT_SIZE,
+  KEYWORD_FONT_FAMILY,
+  BOI_RADIUS,
+  SUB_BRANCH_LENGTH,
+} from './constants';

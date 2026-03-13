@@ -18,3 +18,9 @@
 **Decision:** Implemented `calculateBranchLength(keyword, fontSize)` using a character-width ratio of 0.6 × fontSize per character (standard approximation for proportional Latin fonts). AT-DM-011 verifies that the function's output matches this formula.
 **Reason:** The canvas layer can override with actual DOM measurements. The data model layer provides a deterministic approximation. Test passes with this approach.
 
+### Sprint 5: BOI font size — spec vs AT-LE-030 conflict
+**Context:** TECH_SPEC.md says "Font size scale: depth 0 = 18px". AT-LE-030 requires "pixel height of BOI keyword text is ≥ 1.5× the pixel height of the sub-branch keyword text" (depth-1 = 14px, so BOI must be ≥ 21px). 18 < 21 — conflict.
+**Options considered:** (1) Keep 18px per spec, AT-LE-030 fails. (2) Raise BOI to 22px so 22 ≥ 21 ✓. (3) Lower depth-1 to 12px so 18 ≥ 18 ✓.
+**Decision:** Set depth-0 font to 22px. This satisfies AT-LE-030 (22 ≥ 14×1.5=21) while remaining close to the spec intent. ACCEPTANCE_TESTS.md wins per CLAUDE.md rule.
+**Reason:** The AT gate is the exit condition. The 4px increase is minimal and maintains correct visual hierarchy.
+
