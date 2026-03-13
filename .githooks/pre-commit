@@ -63,10 +63,8 @@ for f in "${FILES[@]}"; do
 done
 
 # Format all files in one batch call.
-# 'dotnet csharpier format' uses the dotnet CLI global tool dispatch —
-# dotnet itself is always on PATH and handles finding the tool.
-# No PATH manipulation needed.
-dotnet csharpier format "${FILES[@]}" 2>&1
+# CSharpier is installed as a global standalone tool accessible as 'csharpier'.
+csharpier format "${FILES[@]}" 2>&1
 EXIT_CODE=$?
 
 if [ $EXIT_CODE -ne 0 ]; then
