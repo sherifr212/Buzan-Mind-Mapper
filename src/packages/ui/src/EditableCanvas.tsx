@@ -430,6 +430,8 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
   const [nextOrder, setNextOrder] = useState(1);
   // Outline export modal
   const [outlineText, setOutlineText] = useState<string | null>(null);
+  const [showReflection, setShowReflection] = useState(false);
+  const [reflectionText, setReflectionText] = useState('');
   // Track which lawIds have already been added to coachQueue to avoid duplicates
   const firedCoachIds = useRef<Set<string>>(new Set());
 
@@ -868,6 +870,21 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
           }}
         >
           📋 Export Outline
+        </button>
+        <button
+          data-testid="save-map-btn"
+          onClick={() => setShowReflection(true)}
+          style={{
+            padding: '4px 10px',
+            fontSize: 12,
+            background: '#059669',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+          }}
+        >
+          Save
         </button>
         <button
           onClick={() => addBlankLine(selectedBranchId)}
@@ -1429,6 +1446,80 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
             populateBOIs(keywords);
           }}
         />
+      )}
+
+      {/* Post-session Reflection Prompt (Sprint 13) */}
+      {showReflection && (
+        <div
+          data-testid="reflection-prompt"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 5000,
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: 10,
+              padding: 24,
+              maxWidth: 480,
+              width: '90%',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+            }}
+          >
+            <h3 style={{ marginTop: 0 }}>Reflection</h3>
+            <p>What was the most surprising association you discovered?</p>
+            <textarea
+              data-testid="reflection-text"
+              value={reflectionText}
+              onChange={(e) => setReflectionText(e.target.value)}
+              style={{
+                width: '100%',
+                height: 80,
+                padding: 8,
+                border: '1px solid #e2e8f0',
+                borderRadius: 4,
+                boxSizing: 'border-box',
+                resize: 'none',
+              }}
+              placeholder="Type your reflection..."
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'flex-end' }}>
+              <button
+                data-testid="reflection-dismiss"
+                onClick={() => setShowReflection(false)}
+                style={{ padding: '6px 14px', cursor: 'pointer' }}
+              >
+                Dismiss
+              </button>
+              <button
+                data-testid="reflection-save"
+                onClick={() => {
+                  setShowReflection(false);
+                  setReflectionText('');
+                }}
+                style={{
+                  padding: '6px 14px',
+                  background: '#059669',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                }}
+              >
+                Save reflection
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

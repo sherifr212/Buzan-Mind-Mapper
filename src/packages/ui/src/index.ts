@@ -17,3 +17,6 @@ export { computeHealthMetrics } from './BuzanHealthPanel';
 export { PersonalStyleMode } from './PersonalStyleMode';
 export type { PersonalStyleModeProps } from './PersonalStyleMode';
 export { MentalBlockPanel } from './MentalBlockPanel';
+export { TutorialFlow } from './TutorialFlow';
+export type { TutorialFlowProps } from './TutorialFlow';
+export { useUserProgressStore } from './UserProgressStore';

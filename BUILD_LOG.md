@@ -1,5 +1,20 @@
 # BUILD LOG — Buzan Mind Mapping Software v1
 
+### [2026-03-14 00:00:01] Sprint 13 — STARTED
+**Status:** STARTED
+**Detail:** Implementing Sprint 13: Onboarding & Progress Tracking. Delivers TutorialFlow (8-step), UserProgressStore (Zustand persist), map-progress-tracker on home screen, post-session reflection prompt, /tutorial route, /map/new locked state for first-time users.
+
+### [2026-03-14 00:00:02] Sprint 13 — COMPLETED
+**Status:** COMPLETED
+**Detail:** All files created: UserProgressStore.ts, TutorialFlow.tsx, TutorialPage.tsx. Updated App.tsx (tutorial route, NewMapPage locked state, HomePage progress tracker). Updated EditableCanvas.tsx (Save button + reflection modal). Created onboarding.spec.ts.
+**AT Results:**
+- AT-OB-001 PASSED: /map/new without tutorial complete → free-create-locked button + tutorial-flow visible
+- AT-OB-002 PASSED: /tutorial → Next×2 → Law 1: Use Hierarchy, rationale, before-after visible
+- AT-OB-004 PASSED: /tutorial?step=4 → Next without image → tutorial-step-blocked with correct message
+- AT-OB-010 PASSED: /?maps=7 → map-progress-tracker shows '7 / 100' and Buzan recommends text
+- AT-OB-011 PASSED: /map/test-fixture-simple → Save → reflection-prompt appears → dismiss closes it
+All 5/5 tests passed.
+
 ### [2026-03-13 00:00:01] Sprint 0 — STARTED
 **Status:** STARTED
 **Detail:** No sprint commits found in git log. Beginning Sprint 0: environment setup and repository scaffold.
@@ -214,3 +229,7 @@
 - AT-LE-052: PASS (E2E — Arrow coaching fires at 10+ branches)
 - AT-LE-053: PASS (E2E — Code Library panel functional, code applied to branch)
 - AT-LE-054: PASS (E2E — Hovering code highlights branches with that code)
+
+### [2026-03-13 17:30:00] Sprint 13 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 13: Onboarding · Tutorial · 100-Map Tracker. AT Gate: AT-OB-001, AT-OB-002, AT-OB-004, AT-OB-010, AT-OB-011.
