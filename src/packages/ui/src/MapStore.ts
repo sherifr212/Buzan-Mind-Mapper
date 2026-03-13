@@ -47,6 +47,12 @@ export interface ClarityModalState {
   words: string[];
 }
 
+export interface CoachItem {
+  id: string;
+  lawId: string;
+  message: string;
+}
+
 export interface MapStoreState {
   map: MindMap | null;
   selectedBranchId: string | null;
@@ -65,6 +71,8 @@ export interface MapStoreState {
   warnQueue: WarnItem[];
   /** Pending Clarity Modal (LE-060 multi-word keyword). */
   clarityModal: ClarityModalState | null;
+  /** COACH tips queue (non-blocking, timed). */
+  coachQueue: CoachItem[];
 
   loadMap: (map: MindMap) => void;
   selectBranch: (id: string | null) => void;
@@ -81,9 +89,13 @@ export interface MapStoreState {
   // ─── Enforcement actions ───────────────────────────────────────────────────
   dismissBlock: () => void;
   dismissWarn: (id: string) => void;
+  dismissCoach: (id: string) => void;
   commitClarityKeep: () => void;
   commitClaritySplit: () => void;
   setOrientation: (orientation: string) => void;
+  addCoachTip: (tip: Omit<CoachItem, 'id'>) => void;
+  addTimedWarn: (warn: Omit<WarnItem, 'id'>) => void;
+  populateBOIs: (keywords: string[]) => void;
 }
 
 /** Push current map onto past stack before a mutation. */
@@ -126,12 +138,28 @@ function makeBranch(
   };
 }
 
-/** Run enforcement checks after a mutation and return any WARN items. */
+/** Run enforcement checks after a mutation and return any WARN items.
+ *  LE-082 is excluded — it is timer-triggered in the canvas component. */
 function collectWarns(map: MindMap): WarnItem[] {
   const results = engine.check(map, { type: 'CREATE_BRANCH' });
   return results
-    .filter((r) => r.level === 'WARN')
+    .filter((r) => r.level === 'WARN' && r.lawId !== 'LE-082')
     .map((r) => ({ id: genId(), lawId: r.lawId, message: r.message }));
+}
+
+/** Check for LE-052: arrow coaching fires at 10+ branches with zero arrows. */
+function collectArrowCoachTip(map: MindMap): CoachItem[] {
+  if (map.branches.length >= 10 && map.arrows.length === 0) {
+    return [
+      {
+        id: genId(),
+        lawId: 'LE-052',
+        message:
+          'Buzan uses arrows to reveal hidden connections — they cross boundaries and link related ideas across your map.',
+      },
+    ];
+  }
+  return [];
 }
 
 export const useMapStore = create<MapStoreState>((set, get) => ({
@@ -144,6 +172,7 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
   blockModal: null,
   warnQueue: [],
   clarityModal: null,
+  coachQueue: [],
 
   loadMap: (map) =>
     set({
@@ -156,6 +185,7 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
       blockModal: null,
       warnQueue: [],
       clarityModal: null,
+      coachQueue: [],
     }),
 
   selectBranch: (id) => set({ selectedBranchId: id }),
@@ -220,8 +250,9 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
         updatedAt: new Date().toISOString(),
       };
 
-      // Post-check: collect WARN results
+      // Post-check: collect WARN and COACH results
       const warns = collectWarns(newMap);
+      const coaches = collectArrowCoachTip(newMap);
 
       return {
         ...hist,
@@ -229,6 +260,7 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
         selectedBranchId: newBranch.id,
         editingBranchId: newBranch.id,
         warnQueue: warns.length > 0 ? warns : state.warnQueue,
+        coachQueue: coaches.length > 0 ? [...state.coachQueue, ...coaches] : state.coachQueue,
       };
     }),
 
@@ -263,8 +295,9 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
         updatedAt: new Date().toISOString(),
       };
 
-      // Post-check: collect WARN results
+      // Post-check: collect WARN and COACH results
       const warns = collectWarns(newMap);
+      const coaches = collectArrowCoachTip(newMap);
 
       return {
         ...hist,
@@ -272,6 +305,7 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
         selectedBranchId: newBranch.id,
         editingBranchId: newBranch.id,
         warnQueue: warns.length > 0 ? warns : state.warnQueue,
+        coachQueue: coaches.length > 0 ? [...state.coachQueue, ...coaches] : state.coachQueue,
       };
     }),
 
@@ -324,12 +358,14 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
         branches: [...state.map.branches, blank],
         updatedAt: new Date().toISOString(),
       };
-      // Post-check: collect WARN results
+      // Post-check: collect WARN and COACH results
       const warns = collectWarns(newMap);
+      const coaches = collectArrowCoachTip(newMap);
       return {
         ...hist,
         map: newMap,
         warnQueue: warns.length > 0 ? warns : state.warnQueue,
+        coachQueue: coaches.length > 0 ? [...state.coachQueue, ...coaches] : state.coachQueue,
       };
     }),
 
@@ -372,6 +408,43 @@ export const useMapStore = create<MapStoreState>((set, get) => ({
     set((state) => ({
       warnQueue: state.warnQueue.filter((w) => w.id !== id),
     })),
+
+  dismissCoach: (id) =>
+    set((state) => ({
+      coachQueue: state.coachQueue.filter((c) => c.id !== id),
+    })),
+
+  addCoachTip: (tip) =>
+    set((state) => ({
+      coachQueue: [...state.coachQueue, { ...tip, id: genId() }],
+    })),
+
+  addTimedWarn: (warn) =>
+    set((state) => ({
+      warnQueue: [...state.warnQueue, { ...warn, id: genId() }],
+    })),
+
+  populateBOIs: (keywords) =>
+    set((state) => {
+      if (!state.map) return state;
+      const hist = pushHistory(state);
+      const filtered = keywords.map((k) => k.trim()).filter(Boolean);
+      const newBranches = filtered.map((kw, i) =>
+        makeBranch(null, 0, state.map!.colorPalette, i, {
+          keyword: kw.toUpperCase(),
+          isUpperCase: true,
+          angle: (2 * Math.PI * i) / filtered.length,
+        })
+      );
+      return {
+        ...hist,
+        map: {
+          ...state.map,
+          branches: [...state.map.branches, ...newBranches],
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    }),
 
   commitClarityKeep: () =>
     set((state) => {

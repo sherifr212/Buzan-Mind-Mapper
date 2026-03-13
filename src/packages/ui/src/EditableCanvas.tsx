@@ -15,12 +15,17 @@ import { useMapStore } from './MapStore';
 import { BlockModal } from './BlockModal';
 import { WarnToast } from './WarnToast';
 import { ClarityModal } from './ClarityModal';
+import { CoachToast } from './CoachToast';
+import { BOIWizard } from './BOIWizard';
 
 // ─── EditableCanvas ───────────────────────────────────────────────────────────
 // Interactive mind map editor built on React Flow.
 // Sprint 6: Tab=child, Enter=sibling, Delete=remove, F2/dblclick=edit,
 //           Drag, Ctrl+Z/Shift+Z=undo/redo, toolbar blank-line button.
 // Sprint 7: Enforcement middleware — BlockModal, WarnToast, ClarityModal wired.
+// Sprint 8: Coach layer — dimension timer (LE-004), arrow coaching (LE-052),
+//           colour inheritance tooltip (LE-022), BOI Wizard (LE-081),
+//           flat map timer (LE-082).
 
 function pickHandleId(angle: number): string {
   const a = ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
@@ -294,18 +299,75 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
     blockModal,
     warnQueue,
     clarityModal,
+    coachQueue,
     dismissBlock,
     dismissWarn,
+    dismissCoach,
     commitClarityKeep,
     commitClaritySplit,
     setOrientation,
+    addCoachTip,
+    addTimedWarn,
+    populateBOIs,
   } = useMapStore();
 
   const [blankCoachingId, setBlankCoachingId] = useState<string | null>(null);
+  const [showBOIWizard, setShowBOIWizard] = useState(false);
+  const [colorInheritTooltipId, setColorInheritTooltipId] = useState<string | null>(null);
+  // Track which lawIds have already been added to coachQueue to avoid duplicates
+  const firedCoachIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     loadMap(initialMap);
+    firedCoachIds.current = new Set();
+    // Show BOI Wizard on new/empty maps (no branches, no central image)
+    if (initialMap.branches.length === 0 && !initialMap.centralImage) {
+      setShowBOIWizard(true);
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── LE-004: Dimension coaching timer (30s) ──────────────────────────────────
+  useEffect(() => {
+    if (!map?.centralImage) return;
+    if (map.centralImage.hasDimension) return;
+    if (firedCoachIds.current.has('LE-004')) return;
+    const timer = window.setTimeout(() => {
+      const current = useMapStore.getState().map;
+      if (current?.centralImage && !current.centralImage.hasDimension) {
+        if (!firedCoachIds.current.has('LE-004')) {
+          firedCoachIds.current.add('LE-004');
+          addCoachTip({
+            lawId: 'LE-004',
+            message:
+              'Adding dimension (shadow or depth) to your central image makes it stand out and engages both brain hemispheres.',
+          });
+        }
+      }
+    }, 30_000);
+    return () => clearTimeout(timer);
+  }, [map?.centralImage?.hasDimension, addCoachTip]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── LE-082: Flat map hierarchy warning timer (3 minutes) ────────────────────
+  useEffect(() => {
+    if (!map || map.branches.length === 0) return;
+    const allFlat = map.branches.every((b) => b.depth === 0);
+    if (!allFlat) return;
+    if (firedCoachIds.current.has('LE-082')) return;
+    const timer = window.setTimeout(() => {
+      const current = useMapStore.getState().map;
+      if (!current || current.branches.length === 0) return;
+      const stillFlat = current.branches.every((b) => b.depth === 0);
+      if (stillFlat && !firedCoachIds.current.has('LE-082')) {
+        firedCoachIds.current.add('LE-082');
+        addTimedWarn({
+          lawId: 'LE-082',
+          message:
+            "Buzan recommends using hierarchy. A hierarchical structure is far more memorable than a flat list — it mirrors how your brain naturally categorises information.",
+        });
+      }
+    }, 3 * 60_000);
+    return () => clearTimeout(timer);
+  }, [map?.branches.length, addTimedWarn]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -494,6 +556,63 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         >
           + Blank Line
         </button>
+        {/* LE-022: Colour change button — blocked for sub-branches */}
+        {selectedBranchId && (() => {
+          const selBranch = map.branches.find((b) => b.id === selectedBranchId);
+          const isSubBranch = selBranch && selBranch.depth > 0;
+          return (
+            <div style={{ position: 'relative' }}>
+              <button
+                data-testid="branch-color-btn"
+                onClick={() => {
+                  if (isSubBranch) {
+                    setColorInheritTooltipId(selectedBranchId);
+                  } else {
+                    setColorInheritTooltipId(null);
+                  }
+                }}
+                style={{ padding: '4px 10px', cursor: 'pointer', fontSize: 12 }}
+              >
+                🎨 Color
+              </button>
+              {colorInheritTooltipId === selectedBranchId && isSubBranch && (
+                <div
+                  data-testid="color-inherit-tooltip"
+                  style={{
+                    position: 'absolute',
+                    top: 36,
+                    right: 0,
+                    background: '#1e293b',
+                    color: 'white',
+                    borderRadius: 6,
+                    padding: '8px 12px',
+                    fontSize: 12,
+                    whiteSpace: 'nowrap',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                    zIndex: 2000,
+                    maxWidth: 320,
+                    whiteSpaceCollapse: 'preserve',
+                  }}
+                >
+                  Sub-branches inherit their BOI colour. Use Personal Style Mode to override.
+                  <button
+                    onClick={() => setColorInheritTooltipId(null)}
+                    style={{
+                      marginLeft: 8,
+                      background: 'none',
+                      border: 'none',
+                      color: '#94a3b8',
+                      cursor: 'pointer',
+                      fontSize: 12,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })()}
         <button
           onClick={undo}
           disabled={past.length === 0}
@@ -569,6 +688,9 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
 
         {/* WARN toasts */}
         <WarnToast items={warnQueue} onDismiss={dismissWarn} />
+
+        {/* COACH toasts (LE-004, LE-052) */}
+        <CoachToast items={coachQueue} onDismiss={dismissCoach} />
       </div>
 
       {/* BLOCK modal — portal-style, fixed overlay */}
@@ -581,6 +703,16 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
           words={clarityModal.words}
           onSplit={commitClaritySplit}
           onKeep={commitClarityKeep}
+        />
+      )}
+
+      {/* BOI Wizard (LE-081) — shown on new empty maps */}
+      {showBOIWizard && (
+        <BOIWizard
+          onStart={(keywords) => {
+            setShowBOIWizard(false);
+            populateBOIs(keywords);
+          }}
         />
       )}
     </div>

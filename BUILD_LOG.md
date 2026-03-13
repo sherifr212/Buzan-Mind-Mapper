@@ -125,6 +125,11 @@
 **Status:** STARTED
 **Detail:** Sprint 7: Enforcement UI — Block & Warn Layer. Wiring EnforcementEngine into MapStore as middleware. Implementing BlockModal, WarnNotification, ClarityModal. AT Gate: AT-LE-001, AT-LE-002, AT-LE-020, AT-LE-060a/b, AT-LE-062, AT-LE-064, AT-LE-010, AT-LE-067, AT-LE-021.
 
+### [2026-03-13 14:00:00] Sprint 8 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 8: Enforcement UI — Coach Layer & BOI Wizard. Implementing CoachingSidebar, dimension timer (LE-004), arrow coaching (LE-052), colour inheritance tooltip (LE-022), BOI Wizard (LE-081), flat map warning (LE-082). AT Gate: AT-LE-004, AT-LE-052, AT-LE-022, AT-LE-081, AT-LE-082.
+**AT Results:** N/A
+
 ### [2026-03-13 00:01:00] Sprint 7 — AT_GATE_RESULTS
 **Status:** COMPLETED
 **Detail:** All 10 AT Gate tests passing. Unit tests (AT-LE-020, AT-LE-021, AT-LE-064) covered by existing sprint3/enforcement test files. E2E tests all passing.
@@ -139,3 +144,13 @@
 - AT-LE-064: PASS (UNIT — Disconnected branch returns BLOCK)
 - AT-LE-010: PASS (E2E — 9th branch with no images triggers WARN)
 - AT-LE-067: PASS (E2E — 13th branch with no images triggers WARN)
+
+### [2026-03-13 14:30:00] Sprint 8 — AT_GATE_RESULTS
+**Status:** COMPLETED
+**Detail:** All 5 AT Gate E2E tests passing. Fixed page.clock.tick → page.clock.fastForward (correct Playwright 1.58.2 API). All 5 tests pass in 4.7s.
+**AT Results:**
+- AT-LE-004: PASS (E2E — Dimension coaching fires after 30s via fake clock)
+- AT-LE-022: PASS (E2E — Colour inheritance tooltip blocks sub-branch colour change)
+- AT-LE-052: PASS (E2E — Arrow coaching fires at 10th branch with zero arrows)
+- AT-LE-081: PASS (E2E — BOI Wizard appears on new map, populates canvas)
+- AT-LE-082: PASS (E2E — Flat map warning fires after 3 minutes via fake clock)
