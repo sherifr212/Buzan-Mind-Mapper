@@ -84,7 +84,7 @@ before committing — the hook does it for you and re-stages the formatted files
 
 If you want to format proactively during development (before staging), run from the repo root:
 ```
-dotnet tool run csharpier src/
+dotnet csharpier format src/
 ```
 
 The hook uses default CSharpier configuration. Do not create a `.csharpierrc` file
@@ -245,7 +245,7 @@ You will encounter every one of these situations. Act immediately without asking
 | Chromatic visual tests | Run via CLI from `src/`: `npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --exit-zero-on-changes` — never rely on GitHub Actions PR trigger. |
 | Playwright tests fail on missing browsers | Run `npx playwright install --with-deps` from `src/` then retry. |
 | `appsettings.Development.json` seems needed | Do not create it — it is gitignored and will be lost. Use `src/.env` instead. |
-| CSharpier needs to run manually | `dotnet tool run csharpier src/` from the repo root. But prefer letting the pre-commit hook handle it. |
+| CSharpier needs to run manually | `dotnet csharpier format src/` from the repo root. But prefer letting the pre-commit hook handle it. |
 | Pre-commit hook not running | Verify with `git config core.hooksPath` — must return `.githooks`. Re-run Step 2 of Sprint 0 if not. |
 | Any infrastructure decision is unclear | Choose the simplest implementation that makes the AT tests pass. Document in DECISIONS.md. |
 
