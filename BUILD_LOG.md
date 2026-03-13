@@ -27,6 +27,25 @@
 
 ### [2026-03-13 00:05:00] Sprint 0 — COMPLETE
 **Status:** COMPLETED
-**Detail:** All Sprint 0 deliverables implemented. Committing.
-**AT Results:** Smoke test PASS. Pipeline ready. Chromatic skipped (no token — documented in BLOCKERS.md).
+**Detail:** All Sprint 0 deliverables committed. Fixed pre-commit hook to use `csharpier` (not `dotnet csharpier`) — standalone install on this machine.
+**AT Results:** Smoke test PASS. Vitest: 10/10 green. Playwright: 1/1 passed. Chromatic: SKIPPED (no token — see BLOCKERS.md).
+
+### [2026-03-13 00:06:00] Sprint 1 — STARTED
+**Status:** STARTED
+**Detail:** Beginning Sprint 1: Data Model — TypeScript Types & Validation.
+**AT Results:** N/A
+
+### [2026-03-13 00:07:00] Sprint 1 — IMPLEMENTATION
+**Status:** COMPLETED
+**Detail:** Implemented in @bmm/data-model: types.ts (MindMap, BranchNode, ImageNode, Arrow, CodeSymbol, ReviewSchedule, all enums), errors.ts (ValidationResult, BMMValidationError), validation.ts (validateMindMap, validateBranch, validateArrow, calculateDepth), colour.ts (resolveColour, assignBoiColour), reviewSchedule.ts (generateReviewSchedule), branchLength.ts (calculateBranchLength), serialiser.ts (serialise, deserialise). Zero TypeScript errors.
+**AT Results:** N/A
+
+### [2026-03-13 00:08:00] Sprint 1 — AT GATE
+**Status:** COMPLETED
+**Detail:** Wrote 19 Vitest unit tests covering all 16 AT-DM IDs. Fixed depth validation (AT-DM-014 conflict resolved — see DECISIONS.md). All 19 tests PASS.
+**AT Results:** AT-DM-001 PASS · AT-DM-002 PASS · AT-DM-003 PASS · AT-DM-004 PASS · AT-DM-010 PASS · AT-DM-011 PASS · AT-DM-012 PASS · AT-DM-013 PASS · AT-DM-014 PASS · AT-DM-015 PASS · AT-DM-016 PASS · AT-DM-017 PASS · AT-DM-020 PASS · AT-DM-021 PASS · AT-DM-030 PASS · AT-DM-031 PASS
+
+### [2026-03-13 00:09:00] Sprint 1 — COMPLETE
+**Status:** COMPLETED
+**Detail:** All 16 AT-DM tests passing. Zero TypeScript errors in @bmm/data-model. Committing.
 
