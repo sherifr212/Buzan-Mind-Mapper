@@ -1,0 +1,22 @@
+# Default — Windows developers get CRLF locally
+* text=auto
+
+# Bash scripts MUST stay LF — CRLF breaks execution on Git Bash
+.githooks/pre-commit text eol=lf
+
+# These are authoritatively LF-only (shell, configs)
+*.sh                 text eol=lf
+*.bash               text eol=lf
+.editorconfig        text eol=lf
+
+# Windows-native files — always CRLF locally
+*.ps1                text eol=crlf
+*.cmd                text eol=crlf
+*.bat                text eol=crlf
+
+# Explicitly binary — never touch line endings
+*.png                binary
+*.jpg                binary
+*.ico                binary
+*.woff2              binary
+*.ttf                binary
