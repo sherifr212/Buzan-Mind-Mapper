@@ -3,7 +3,7 @@
 # Do not close this window. Come back when BUILD_LOG.md shows Sprint 21 complete.
 
 param(
-    [int]$RetryWaitMinutes      = 65,
+    [int]$RetryWaitMinutes      = 5,
     [int]$MaxSessions           = 200,
     [int]$SessionTimeoutMinutes = 120,
     [int]$MaxTurns              = 150
@@ -325,8 +325,8 @@ try {
             $waitMinutes = $RetryWaitMinutes
         } else {
             Log "No sprint progress (still on Sprint $currentSprint). Possible error." "Yellow"
-            Log "Short wait of 5 minutes before retry..." "Yellow"
-            $waitMinutes = 5
+            Log "Short wait of 5 minutes before retry..f." "Yellow"
+            $waitMinutes = 1
         }
         Log "(Press Ctrl+C to stop cleanly at any time.)" "DarkGray"
         Log ""
@@ -336,7 +336,7 @@ try {
                            -Status   "$remaining min remaining  |  total cost: `$$([math]::Round($script:totalCost,4))" `
                            -PercentComplete ((($waitMinutes - $remaining) / $waitMinutes) * 100)
             Start-Sleep -Seconds 60
-            if ($remaining % 5 -eq 0) { Log "  $remaining min remaining..." "DarkGray" }
+            Log "  $remaining min remaining..." "DarkGray"
         }
         Write-Progress -Activity "Cooldown" -Completed
         Log ""
