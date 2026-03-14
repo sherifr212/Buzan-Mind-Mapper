@@ -1024,3 +1024,564 @@ The following pipeline is recommended. All gates must pass before a merge to mai
 *End of Document — Buzan Mind Mapping Software Acceptance Test Suite v1.0*
 
 *'Memory works by an activation process, which spreads from word to associated word via these links.' — Anderson & Perlmutter (cited by Buzan)*
+
+# ACCEPTANCE TESTS ADDENDUM — PWA & Offline Support
+# Insert this section into ACCEPTANCE_TESTS.md as a new section: "Section 16 — PWA & Offline"
+# All test IDs use the prefix AT-PWA to avoid collision with existing IDs.
+
+---
+
+## Section 16 — PWA & Offline Support
+
+### AT Gate mapping
+- Sprint 22 AT Gate: AT-PWA-001 through AT-PWA-040
+- Sprint 23 AT Gate: AT-PWA-041 through AT-PWA-090
+
+---
+
+### 16.1 — Installability & Manifest
+
+**AT-PWA-001** — Web App Manifest is valid and complete
+```
+GIVEN the production build is served over HTTPS
+WHEN a Lighthouse PWA audit is run in Chrome headless
+THEN the manifest audit passes with zero failures
+AND all required fields (name, short_name, start_url, display, icons, theme_color) are present
+AND at least one 192×192 icon and one 512×512 icon exist
+AND at least one maskable icon exists
+```
+
+**AT-PWA-002** — App is installable on Chrome desktop
+```
+GIVEN the app is loaded in Chrome 120+ on desktop
+WHEN the user navigates to the app
+THEN the browser address bar shows an install icon
+AND clicking the icon triggers the install prompt
+AND accepting installs the app as a standalone window
+AND the installed app opens with display: standalone (no browser chrome)
+```
+
+**AT-PWA-003** — App is installable on Android Chrome
+```
+GIVEN the app is loaded in Chrome on Android
+WHEN the user has visited the app on two separate occasions
+THEN the browser shows an Add to Home Screen banner
+AND accepting installs the app
+AND the installed app launches as a standalone app
+AND the splash screen uses the configured background_color and 512×512 icon
+```
+
+**AT-PWA-004** — iOS Safari Add to Home Screen works
+```
+GIVEN the app is loaded in Safari on iOS 16+
+WHEN the user opens the Share menu and taps Add to Home Screen
+THEN the app icon matches the apple-touch-icon (180×180)
+AND the app title matches apple-mobile-web-app-title
+AND the installed app launches in standalone mode (no Safari UI)
+AND the status bar style is black-translucent
+```
+
+**AT-PWA-005** — Custom install banner appears and dismisses
+```
+GIVEN the app is loaded for the first time in an installable browser
+AND the user has not previously dismissed the install banner
+WHEN the beforeinstallprompt event fires
+THEN the custom install banner appears in the bottom-right within 5 seconds
+AND the banner text reads "Install Radiant for full offline access"
+AND clicking "Install" triggers the native install prompt
+AND clicking "Not now" hides the banner
+AND the banner does not reappear for 30 days after dismissal
+```
+
+**AT-PWA-006** — Install banner does not appear on iOS
+```
+GIVEN the app is loaded in iOS Safari
+WHEN the page loads
+THEN the bottom-right install banner for beforeinstallprompt does NOT appear
+AND instead a contextual tooltip or menu item shows manual Add to Home Screen instructions
+```
+
+**AT-PWA-007** — Reinstall is available from Settings
+```
+GIVEN the user dismissed the install banner
+WHEN the user navigates to Settings → Install App
+THEN the install prompt is triggered
+```
+
+---
+
+### 16.2 — Service Worker Registration & Lifecycle
+
+**AT-PWA-008** — Service Worker registers on first visit
+```
+GIVEN a user visits the app for the first time
+WHEN the page finishes loading
+THEN a Service Worker is registered at scope /
+AND the Service Worker state is 'activated'
+AND the browser DevTools Application tab shows the SW as active
+```
+
+**AT-PWA-009** — Service Worker survives page reload
+```
+GIVEN a Service Worker is active
+WHEN the user reloads the page
+THEN the same Service Worker instance handles the page
+AND no re-registration fetch occurs for the SW script
+```
+
+**AT-PWA-010** — Service Worker update is detected and applied
+```
+GIVEN an active Service Worker exists
+WHEN a new version of the app is deployed (SW script changes)
+AND the user loads or reloads the app
+THEN the new Service Worker is installed in 'waiting' state
+AND a non-intrusive "Update available" banner appears
+AND clicking "Reload" in the banner calls skipWaiting() and reloads
+AND after reload the new SW is active
+```
+
+**AT-PWA-011** — Old caches are purged on SW activation
+```
+GIVEN a new Service Worker activates
+WHEN the activate event fires
+THEN all cache entries with names NOT matching the current version are deleted
+AND DevTools shows only current-version cache names
+```
+
+**AT-PWA-012** — Service Worker does not intercept non-GET requests
+```
+GIVEN an active Service Worker
+WHEN the app makes a POST, PUT, PATCH, or DELETE API request
+THEN the Service Worker passes the request through to the network without caching
+AND the response is not written to any cache
+```
+
+---
+
+### 16.3 — Caching Strategies
+
+**AT-PWA-013** — App shell loads from cache when offline
+```
+GIVEN the app has been visited at least once
+WHEN the device network is disabled (Playwright: context.setOffline(true))
+AND the user navigates to the app root URL
+THEN the app shell (HTML, JS bundles, CSS) loads from the Service Worker cache
+AND the page renders within 2 seconds
+AND no network requests are made for app shell assets
+```
+
+**AT-PWA-014** — Static assets are served from cache (Cache First)
+```
+GIVEN the app shell is cached
+WHEN a request is made for a cached static asset (font, icon, image)
+AND the network is available
+THEN the Service Worker serves the asset from cache without hitting the network
+AND the response header x-sw-strategy is 'cache-first' (or equivalent)
+```
+
+**AT-PWA-015** — API map list uses Network First with fallback
+```
+GIVEN the map list API has been fetched at least once
+WHEN the device goes offline
+AND the user navigates to the map list page
+THEN the map list renders from the api-maps-v1 cache
+AND a visual indicator shows the list may be out of date
+```
+
+**AT-PWA-016** — Single map uses Stale-While-Revalidate
+```
+GIVEN a map has been opened at least once
+WHEN the user opens the same map while online
+THEN the cached version renders immediately (stale)
+AND the Service Worker fetches the latest version in the background
+AND the UI updates silently if the server version differs
+```
+
+**AT-PWA-017** — Navigation requests return offline fallback page
+```
+GIVEN the device is offline
+WHEN the user navigates to a URL that is not in the precache
+THEN the offline.html fallback page is returned
+AND the fallback page is fully styled and branded
+AND the fallback page lists available offline maps
+AND no uncaught network error appears in the console
+```
+
+**AT-PWA-018** — Cache respects configured entry limits
+```
+GIVEN the api-map-detail-v1 cache has reached 200 entries
+WHEN a new map detail response is cached
+THEN the oldest entry is evicted
+AND the cache size remains at or below 200 entries
+```
+
+---
+
+### 16.4 — IndexedDB & Local Data
+
+**AT-PWA-019** — Map is persisted to IndexedDB on first open
+```
+GIVEN the user opens a map for the first time
+WHEN the map canvas finishes loading
+THEN a record exists in the Dexie 'maps' table for that mapId
+AND the record contains the full node and edge data
+AND the record syncStatus is 'synced'
+```
+
+**AT-PWA-020** — Top 20 maps are pre-cached on login
+```
+GIVEN the user logs in
+WHEN the map list API response is processed
+THEN the 20 most recently modified maps are fetched and stored in IndexedDB
+AND this fetch happens in the background without blocking the UI
+```
+
+**AT-PWA-021** — Map list renders from IndexedDB when offline
+```
+GIVEN the top 20 maps are pre-cached in IndexedDB
+WHEN the device goes offline
+AND the user navigates to the map list
+THEN all cached maps are listed
+AND maps NOT in IndexedDB are not shown (no partial / broken entries)
+AND the list renders within 1 second
+```
+
+**AT-PWA-022** — Map editor renders from IndexedDB when offline
+```
+GIVEN a map is cached in IndexedDB
+WHEN the device is offline
+AND the user opens that map
+THEN the full map renders correctly in the canvas
+AND all nodes, edges, colours, and layout are preserved
+AND the canvas is fully interactive (pan, zoom, select)
+```
+
+**AT-PWA-023** — New map created offline is assigned a client UUID
+```
+GIVEN the device is offline
+WHEN the user creates a new map
+THEN the map is created with a client-generated UUID (format: local-{uuid-v4})
+AND the map appears in the map list immediately
+AND a 'create' entry is added to the syncQueue table
+AND the map syncStatus is 'pending'
+```
+
+**AT-PWA-024** — Sync queue survives page close and reopen
+```
+GIVEN the user has made offline edits with syncStatus: 'pending'
+WHEN the user closes the browser completely and reopens the app while still offline
+THEN the syncQueue entries are still present in IndexedDB
+AND the pending changes indicator shows the correct count
+```
+
+**AT-PWA-025** — Sync queue is cleared after successful sync
+```
+GIVEN there are pending items in the syncQueue for a map
+WHEN the device comes back online
+AND the sync flush function runs
+THEN all syncQueue entries for that map are deleted
+AND the map syncStatus is set to 'synced'
+AND the pending changes indicator disappears
+```
+
+**AT-PWA-026** — Deleted map syncs deletion to server
+```
+GIVEN the user deletes a map while offline
+WHEN the device comes back online
+THEN a DELETE request is sent to the server for that mapId
+AND the map is removed from IndexedDB
+AND the server confirms deletion
+```
+
+**AT-PWA-027** — Sync queue entry is abandoned after 10 failed attempts
+```
+GIVEN a syncQueue entry has failed 10 consecutive sync attempts
+WHEN the sync flush function runs again
+THEN the entry is moved to a 'failed' state and no longer retried
+AND the user sees a non-blocking error notification
+AND the map syncStatus is set to 'conflict'
+AND the user can manually trigger a retry from the map details panel
+```
+
+---
+
+### 16.5 — CRDT Conflict Resolution (Yjs)
+
+**AT-PWA-028** — Offline node creation merges with concurrent server edit
+```
+GIVEN User A opens a map on device 1
+AND User A goes offline on device 1
+WHEN User A creates a new node "Node X" on device 1 while offline
+AND simultaneously the server version of the map receives a new node "Node Y" from device 2
+AND device 1 comes back online
+THEN the merged map contains BOTH "Node X" and "Node Y"
+AND no data is lost
+AND no conflict prompt is shown to the user
+AND the Yjs document state is identical on both devices
+```
+
+**AT-PWA-029** — Concurrent node title edits merge without loss
+```
+GIVEN a map is open on two devices simultaneously
+WHEN device 1 goes offline and edits node title from "Alpha" to "Alpha Extended"
+AND device 2 (online) edits the same node title to "Alpha Revised"
+AND device 1 comes back online
+THEN the merged node title reflects the Yjs CRDT merge (last-char-wins at character level)
+AND the document is consistent on both devices
+AND no error is thrown
+```
+
+**AT-PWA-030** — Node deletion while offline is preserved after sync
+```
+GIVEN a map with nodes [A, B, C]
+WHEN the user goes offline and deletes node B
+AND the server has no changes to node B
+AND the user comes back online
+THEN node B is absent from the merged document on both devices
+```
+
+**AT-PWA-031** — Yjs document persists across Service Worker restart
+```
+GIVEN a Yjs document is open and cached via y-indexeddb
+WHEN the browser is closed and reopened
+THEN the y-indexeddb provider restores the full document state
+AND no data loss occurs for committed operations
+```
+
+**AT-PWA-032** — WebSocket provider reconnects automatically
+```
+GIVEN the Yjs WebSocket provider loses connection
+WHEN connectivity is restored
+THEN the WebSocket provider reconnects within 10 seconds
+AND the awareness state is re-exchanged with the server
+AND any offline operations are replayed automatically
+```
+
+---
+
+### 16.6 — Network Status & UI Indicators
+
+**AT-PWA-033** — Offline indicator appears within 1 second of going offline
+```
+GIVEN the user is using the app online
+WHEN the network is disabled
+THEN the offline status pill appears in the top navigation bar within 1 second
+AND the pill text reads "Offline — changes saved locally"
+AND the pill colour is red (design token --color-error)
+AND the transition is animated (fade-in 300ms)
+```
+
+**AT-PWA-034** — Offline indicator disappears when connectivity returns
+```
+GIVEN the offline indicator is visible
+WHEN the network is restored
+AND the periodic HEAD /api/health check succeeds
+THEN the offline indicator fades out within 5 seconds
+AND no indicator is shown when fully online
+```
+
+**AT-PWA-035** — Degraded mode shows yellow indicator
+```
+GIVEN navigator.onLine is true
+WHEN three consecutive HEAD /api/health requests fail
+THEN the status transitions to 'degraded'
+AND the indicator shows "Limited connectivity" in yellow
+```
+
+**AT-PWA-036** — Pending changes indicator shows correct count
+```
+GIVEN the device is offline and the user has made 3 edits to a map
+WHEN the user views the map editor
+THEN the toolbar shows "3 unsaved changes" with a clock icon
+AND the count updates in real time as more edits are made
+```
+
+**AT-PWA-037** — Pending changes indicator shows "Syncing..." on reconnect
+```
+GIVEN the pending changes indicator is showing "3 unsaved changes"
+WHEN the device comes back online and sync begins
+THEN the indicator transitions to "Syncing..." with a spinner
+AND on completion the indicator disappears
+AND the transition takes no more than 500ms
+```
+
+**AT-PWA-038** — Offline map list badge shows pending maps
+```
+GIVEN the user has offline pending maps
+WHEN the user views the map list
+THEN maps with syncStatus: 'pending' show a clock badge
+AND the badge is visually distinct from the online maps
+```
+
+---
+
+### 16.7 — Lighthouse & PWA Audit
+
+**AT-PWA-039** — Lighthouse PWA score is 100
+```
+GIVEN the production build is running on an HTTPS server
+WHEN a Lighthouse audit is run in Chrome headless (--only-categories=pwa)
+THEN the PWA score is exactly 100
+AND all PWA audits pass with no failures
+AND no manual PWA audit items are flagged
+```
+
+**AT-PWA-040** — Lighthouse Performance score is ≥ 90
+```
+GIVEN the production build is running
+WHEN a Lighthouse performance audit is run on the map list page
+THEN the Performance score is ≥ 90
+AND First Contentful Paint is < 1.5s on simulated Fast 3G
+AND Largest Contentful Paint is < 2.5s on simulated Fast 3G
+AND Total Blocking Time is < 200ms
+AND Cumulative Layout Shift is < 0.1
+```
+
+---
+
+### 16.8 — Background Sync & Edge Cases
+
+**AT-PWA-041** — Background sync fires when app is closed
+```
+GIVEN the user has pending offline edits and closes the browser
+WHEN the device comes back online
+THEN the Service Worker Background Sync event fires
+AND the sync flush function runs
+AND the pending edits are sent to the server
+AND on next app open the maps show syncStatus: 'synced'
+NOTE: This test requires a real browser; use Playwright with background sync support
+```
+
+**AT-PWA-042** — App works correctly with storage quota warning
+```
+GIVEN the device IndexedDB storage is nearly full (simulate via DevTools quota override)
+WHEN the user opens or edits a map
+THEN the app does not crash
+AND a non-blocking warning is shown: "Storage nearly full — older offline maps may be removed"
+AND the sync queue operations continue for the current map
+```
+
+**AT-PWA-043** — Service Worker handles fetch errors gracefully
+```
+GIVEN the Service Worker intercepts a fetch that throws a TypeError
+WHEN the error occurs
+THEN the error is caught within the Service Worker
+AND a fallback response is returned (cached or offline page)
+AND the error is logged to the console without crashing the SW
+AND no unhandled promise rejection appears
+```
+
+**AT-PWA-044** — Multiple tabs share Yjs document state
+```
+GIVEN the app is open in two browser tabs on the same device
+WHEN a node is edited in tab 1
+THEN tab 2 reflects the change within 500ms (via Yjs BroadcastChannel provider)
+AND both tabs show syncStatus: 'synced'
+```
+
+**AT-PWA-045** — IndexedDB is cleared correctly on logout
+```
+GIVEN the user is logged in with cached maps and syncQueue entries
+WHEN the user logs out
+THEN all Dexie table entries are deleted (maps, syncQueue, snapshots)
+AND the Service Worker caches for api-maps and api-map-detail are cleared
+AND on next login only fresh data is shown
+```
+
+---
+
+### 16.9 — Unit Tests (Vitest)
+
+The following must be implemented as Vitest unit tests in `@bmm/data-model/src/__tests__/pwa/`:
+
+**AT-PWA-046 — `NetworkStatusService.test.ts`**
+- `online` event sets status to 'online'
+- `offline` event sets status to 'offline'
+- Three consecutive HEAD failures set status to 'offline' regardless of `navigator.onLine`
+- Single HEAD success after failures restores status to 'online'
+- Subscribers are notified on every status change
+- Unsubscribed callbacks are not called
+
+**AT-PWA-047 — `SyncQueue.test.ts`**
+- `enqueue` adds item to Dexie syncQueue
+- `flush` sends each item and deletes on success
+- `flush` increments `attempts` on failure
+- Items with `attempts >= 10` are marked failed and skipped
+- `clear(mapId)` removes all items for that map
+- Queue is correctly ordered by `createdAt`
+
+**AT-PWA-048 — `OfflineMapStore.test.ts`**
+- `getMap(id)` returns map from IndexedDB
+- `getMap(id)` returns null for unknown id
+- `saveMap(map)` writes to IndexedDB
+- `listMaps()` returns all non-deleted maps sorted by updatedAt desc
+- `deleteMap(id)` soft-deletes (sets deleted: true)
+- `getPendingMaps()` returns only maps with syncStatus: 'pending'
+
+**AT-PWA-049 — `CacheStrategy.test.ts`** (Service Worker unit tests via `vitest-environment-miniflare` or equivalent)
+- CacheFirst: returns cache hit without network call
+- CacheFirst: falls back to network on cache miss
+- NetworkFirst: returns network response and updates cache
+- NetworkFirst: returns cache on network failure
+- StaleWhileRevalidate: returns cache immediately and triggers background revalidation
+- Cache eviction removes oldest entry when limit is reached
+
+**AT-PWA-050 — `YjsDocument.test.ts`**
+- New Y.Doc has empty nodes and edges maps
+- Adding a node via Y.Map is reflected in the document
+- Two Y.Doc instances with the same update bytes converge to identical state
+- Merging concurrent inserts produces both inserts (no loss)
+- Merging concurrent delete and edit resolves without crash
+- `IndexeddbPersistence` round-trip: save and restore produces identical Y.Doc state
+
+---
+
+### Appendix — Test Infrastructure for PWA Tests
+
+**Playwright offline simulation:**
+```typescript
+// Use in any Playwright test
+await page.context().setOffline(true);
+// ... perform offline actions
+await page.context().setOffline(false);
+// ... assert sync
+```
+
+**Playwright Service Worker assertion:**
+```typescript
+const sw = await page.context().serviceWorkers()[0];
+expect(sw).toBeTruthy();
+```
+
+**Lighthouse CI configuration** (add to `lighthouserc.json`):
+```json
+{
+  "ci": {
+    "collect": {
+      "url": ["http://localhost:4173/", "http://localhost:4173/maps"],
+      "settings": { "chromeFlags": "--headless" }
+    },
+    "assert": {
+      "assertions": {
+        "categories:pwa": ["error", {"minScore": 1}],
+        "categories:performance": ["error", {"minScore": 0.9}],
+        "categories:accessibility": ["error", {"minScore": 0.95}]
+      }
+    }
+  }
+}
+```
+
+**Required test packages** (add to `src/package.json` devDependencies):
+```json
+{
+  "@lhci/cli": "^0.14.0",
+  "fake-indexeddb": "^6.0.0",
+  "workbox-core": "^7.0.0",
+  "workbox-precaching": "^7.0.0",
+  "workbox-routing": "^7.0.0",
+  "workbox-strategies": "^7.0.0",
+  "workbox-background-sync": "^7.0.0"
+}
+```
+

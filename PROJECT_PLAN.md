@@ -417,3 +417,246 @@ Each sprint card shows: goal · dependency · entry condition · deliverables ·
 *End of Document — Buzan Mind Mapping Software Project Execution Plan v1.0*
 
 *'The only difficulty is deciding when to stop.' — Tony Buzan*
+
+# PROJECT PLAN ADDENDUM — PWA & Offline Support
+# Append Sprint 22 and Sprint 23 to PROJECT_PLAN.md after Sprint 21.
+# Update the DONE CONDITION in CLAUDE.md: change "Sprint 21" to "Sprint 23".
+
+---
+
+## Sprint 22 — PWA Foundation & Service Worker
+
+**Duration:** 1 week
+**Depends on:** Sprint 21 complete (production deployment)
+**Goal:** Make the application fully installable and cache-complete. By end of this sprint
+the app must install on all three platforms, load from cache while offline, and score 100
+on the Lighthouse PWA audit.
+
+### DELIVERS
+
+**1. vite-plugin-pwa integration**
+- Install `vite-plugin-pwa` and `workbox-*` packages in `src/apps/web`
+- Configure `injectManifest` strategy in `vite.config.ts`
+- Point `swSrc` to `src/apps/web/src/sw/service-worker.ts`
+- Generate manifest with all required fields (see Tech Spec — PWA Manifest section)
+
+**2. Web App Manifest**
+- All required fields populated (name, short_name, display: standalone, etc.)
+- Icons generated at all 10 required sizes using `sharp` or `pwa-asset-generator`
+- Maskable variants for 192×192 and 512×512
+- `theme_color` and `background_color` wired to design tokens
+
+**3. iOS meta tags**
+- All five required `<meta>` and `<link>` tags added to `index.html`
+- Apple touch startup images for iPad and iPhone portrait/landscape
+
+**4. Service Worker (`src/apps/web/src/sw/service-worker.ts`)**
+- Workbox precache manifest injection for app shell
+- Cache strategies per the Tech Spec matrix (CacheFirst, NetworkFirst, StaleWhileRevalidate)
+- Navigation handler with `/offline.html` fallback
+- `activate` event purges old cache versions
+- Stubbed `push` event listener
+- Background Sync tag `bmm-sync-queue` registration
+
+**5. `/offline.html` fallback page**
+- Fully styled standalone HTML (no external dependencies — fully inlined)
+- Shows offline icon, branded message, and link to open the app when online
+- Lists "Available offline" as a static list (hydrated by SW on load)
+
+**6. Cache warming on login**
+- After successful login, background-fetch the top 20 most recently modified maps
+- Store responses in `api-map-detail-v1` cache
+- Do not block UI render
+
+**7. SW update banner**
+- Non-intrusive bottom banner: "Update available — reload to apply"
+- Calls `skipWaiting()` on click then `window.location.reload()`
+- Detected via `workbox-window`'s `waiting` event
+
+**8. Install banner component**
+- `<InstallBanner />` React component in `@bmm/ui`
+- Captures `beforeinstallprompt`, stores in ref
+- Renders bottom-right toast with "Install" and "Not now" CTAs
+- Dismissal stored in `localStorage` with 30-day expiry
+- iOS detection: shows manual instructions modal instead
+- Settings page "Install App" entry triggers stored prompt
+
+**9. Lighthouse CI setup**
+- `lighthouserc.json` at repo root
+- `lhci autorun` added to CI workflow
+- Thresholds: PWA=1.0, Performance≥0.9, Accessibility≥0.95
+
+### AT GATE — Sprint 22
+All of the following must pass before committing:
+- AT-PWA-001 (manifest valid)
+- AT-PWA-002 (Chrome desktop install)
+- AT-PWA-005 (custom install banner)
+- AT-PWA-006 (no banner on iOS)
+- AT-PWA-007 (reinstall from settings)
+- AT-PWA-008 (SW registers)
+- AT-PWA-009 (SW survives reload)
+- AT-PWA-010 (SW update detected)
+- AT-PWA-011 (old caches purged)
+- AT-PWA-012 (non-GET not cached)
+- AT-PWA-013 (app shell offline)
+- AT-PWA-014 (static assets cache-first)
+- AT-PWA-017 (offline fallback page)
+- AT-PWA-018 (cache entry limits)
+- AT-PWA-039 (Lighthouse PWA = 100)
+- AT-PWA-040 (Lighthouse Performance ≥ 90)
+
+**AT tests AT-PWA-003 and AT-PWA-004** (Android/iOS install) are manual verification only
+— add to DECISIONS.md as "verified manually by human on real device before sprint close".
+
+### Commit message
+`Sprint 22 complete: PWA foundation, service worker, install`
+
+---
+
+## Sprint 23 — Offline Data Layer, Sync, & CRDT
+
+**Duration:** 1 week
+**Depends on:** Sprint 22 complete
+**Goal:** Full offline read/write capability with automatic CRDT-based conflict resolution
+using Yjs. By end of this sprint a user can create, edit, and delete maps with no network,
+and all changes sync automatically and silently when connectivity returns.
+
+### DELIVERS
+
+**1. Dexie.js database**
+- Install `dexie` in `@bmm/data-model`
+- Implement `BmmDatabase` class per the Tech Spec IndexedDB schema
+- Tables: `maps`, `syncQueue`, `snapshots`, `settings`
+- Version migration scaffold for future schema changes
+
+**2. Yjs integration**
+- Install `yjs`, `y-indexeddb`, `y-websocket` in `@bmm/data-model`
+- `YjsMapDocument` class wrapping `Y.Doc` with typed accessors for nodes and edges
+- `WebsocketProvider` connected to `/hubs/map-sync` (extend existing SignalR or new WS endpoint)
+- `IndexeddbPersistence` bound to each map's Y.Doc
+- `BroadcastChannelProvider` for cross-tab sync on same device
+
+**3. ASP.NET backend — Yjs sync endpoint**
+- New WebSocket endpoint `/hubs/map-sync?mapId={id}` in `src/Bmm.Api`
+- Accepts Yjs binary protocol messages (awareness + document updates)
+- Stores latest Y.Doc state snapshot in Redis (keyed `yjs:map:{id}`)
+- Persists full document to PostgreSQL on idle (debounced 5 seconds)
+- Authorisation: user must have read/write access to the map
+
+**4. Offline data access layer**
+- `OfflineMapStore` service in `@bmm/data-model`
+- `getMap(id)` — reads from IndexedDB, falls back to API
+- `listMaps()` — reads from IndexedDB when offline, API when online
+- `saveMap(map)` — writes to IndexedDB; enqueues sync item if offline
+- `deleteMap(id)` — soft-delete locally; enqueues delete sync item
+
+**5. SyncQueue service**
+- `SyncQueueService` in `@bmm/data-model`
+- `enqueue(item)` — adds to Dexie syncQueue
+- `flush()` — processes all pending items in order, retries on failure
+- Abandons items after 10 failed attempts, marks as failed
+- Emits events: `sync:start`, `sync:progress`, `sync:complete`, `sync:failed`
+
+**6. NetworkStatusService**
+- Singleton in `@bmm/data-model`
+- `navigator.onLine` + periodic HEAD `/api/health` every 30 seconds
+- Three consecutive failures → `'offline'`; first success → `'online'`
+- `'degraded'` mode as specified in Tech Spec
+- Triggers `SyncQueueService.flush()` on transition to `'online'`
+
+**7. Offline UI components** (in `@bmm/ui`)
+- `<NetworkStatusIndicator />` — top nav pill with animated transitions
+  - Hidden when online
+  - Yellow "Limited connectivity" when degraded
+  - Red "Offline — changes saved locally" when offline
+- `<PendingChangesIndicator />` — editor toolbar component
+  - "N unsaved changes" with clock icon
+  - "Syncing…" with spinner on reconnect
+  - Disappears on sync complete
+- `<OfflineMapBadge />` — clock badge for map list cards
+
+**8. Map list offline support**
+- Map list page reads from `OfflineMapStore.listMaps()` when offline
+- "Offline available" filter chip
+- Empty state for "No offline maps" case
+
+**9. Offline map creation**
+- New maps while offline get UUID `local-{v4}`
+- Appear in map list immediately with pending badge
+- Renamed to server ID after first successful sync
+
+**10. Logout cleanup**
+- On logout, clear all Dexie tables
+- Clear `api-maps` and `api-map-detail` Service Worker caches
+- Revoke Yjs WebSocket connections
+
+**11. Unit test suite** (Vitest)
+- `NetworkStatusService.test.ts` (AT-PWA-046) — all 6 cases
+- `SyncQueue.test.ts` (AT-PWA-047) — all 6 cases
+- `OfflineMapStore.test.ts` (AT-PWA-048) — all 6 cases
+- `CacheStrategy.test.ts` (AT-PWA-049) — all 6 cases
+- `YjsDocument.test.ts` (AT-PWA-050) — all 6 cases
+
+**12. E2E offline test suite** (Playwright)
+- `offline.spec.ts` in `src/apps/web/e2e/`
+- Uses `page.context().setOffline(true/false)` throughout
+- Covers: map list offline, map editor offline, create offline, edit offline, sync on reconnect,
+  CRDT merge scenario, pending indicator, network status pill transitions
+
+### AT GATE — Sprint 23
+All of the following must pass before committing:
+- AT-PWA-015 (API map list NetworkFirst fallback)
+- AT-PWA-016 (single map StaleWhileRevalidate)
+- AT-PWA-019 (map persisted to IndexedDB on open)
+- AT-PWA-020 (top 20 pre-cached on login)
+- AT-PWA-021 (map list from IndexedDB offline)
+- AT-PWA-022 (map editor from IndexedDB offline)
+- AT-PWA-023 (new map offline gets client UUID)
+- AT-PWA-024 (sync queue survives page close)
+- AT-PWA-025 (sync queue cleared after sync)
+- AT-PWA-026 (deleted map syncs to server)
+- AT-PWA-027 (failed items abandoned after 10 attempts)
+- AT-PWA-028 (offline node creation merges with server edit)
+- AT-PWA-029 (concurrent title edits CRDT merge)
+- AT-PWA-030 (offline node deletion preserved after sync)
+- AT-PWA-031 (Yjs document persists across SW restart)
+- AT-PWA-032 (WebSocket provider reconnects)
+- AT-PWA-033 (offline indicator within 1 second)
+- AT-PWA-034 (offline indicator disappears on reconnect)
+- AT-PWA-035 (degraded mode yellow indicator)
+- AT-PWA-036 (pending changes count correct)
+- AT-PWA-037 (syncing animation on reconnect)
+- AT-PWA-038 (pending badge on map list)
+- AT-PWA-043 (SW handles fetch errors gracefully)
+- AT-PWA-044 (multi-tab Yjs sync)
+- AT-PWA-045 (IndexedDB cleared on logout)
+- AT-PWA-046 (NetworkStatusService unit tests — all 6 pass)
+- AT-PWA-047 (SyncQueue unit tests — all 6 pass)
+- AT-PWA-048 (OfflineMapStore unit tests — all 6 pass)
+- AT-PWA-049 (CacheStrategy unit tests — all 6 pass)
+- AT-PWA-050 (YjsDocument unit tests — all 6 pass)
+
+**AT-PWA-041** (Background sync when app closed) — mark as manual verification in DECISIONS.md.
+**AT-PWA-042** (Storage quota warning) — implement best-effort; add to BLOCKERS.md if DevTools
+quota simulation is unavailable in the CI environment.
+
+### Commit message
+`Sprint 23 complete: Offline data layer, Yjs CRDT sync, offline UI`
+
+---
+
+## Updated DONE CONDITION for CLAUDE.md
+
+Replace the existing DONE CONDITION in CLAUDE.md:
+
+**OLD:**
+> Sprint 21 is the final sprint. Your final commit message must be exactly:
+> `Sprint 21 complete: Production deployment — v1 SHIPPED`
+
+**NEW:**
+> Sprint 23 is the final sprint. Your final commit message must be exactly:
+> `Sprint 23 complete: Offline data layer, Yjs CRDT sync, offline UI`
+
+Also update the FINAL_REPORT.md instruction from "22 sprint completion statuses" to
+"24 sprint completion statuses (Sprints 0–23)".
+
