@@ -25,3 +25,6 @@ export { exportToSvg, exportToBmm, exportToDocx, exportToPdf, exportToOpml, getP
 export { importBmmFile, checkCompliance } from './ImportService';
 export { HierarchyOutlineView } from './HierarchyOutlineView';
 export type { ComplianceViolation, ImportResult } from './ImportService';
+
+export { InstallBanner, triggerInstallPrompt } from './InstallBanner';
+export { SWUpdateBanner } from './SWUpdateBanner';

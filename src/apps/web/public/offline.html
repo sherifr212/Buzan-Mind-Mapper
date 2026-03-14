@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Radiant Mind — Offline</title>
+    <style>
+      :root {
+        --color-brand: #4f46e5;
+        --color-brand-dark: #4338ca;
+        --color-surface: #ffffff;
+        --color-text: #111827;
+        --color-text-secondary: #6b7280;
+        --color-border: #e5e7eb;
+        --color-bg: #f9fafb;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--color-bg);
+        color: var(--color-text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 16px;
+        padding: 48px 40px;
+        max-width: 480px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      }
+
+      .icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 24px;
+        background: #eef2ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .icon svg {
+        width: 40px;
+        height: 40px;
+        color: var(--color-brand);
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--color-text);
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        font-size: 1rem;
+        color: var(--color-text-secondary);
+        margin-bottom: 32px;
+        line-height: 1.5;
+      }
+
+      .open-btn {
+        display: inline-block;
+        background: var(--color-brand);
+        color: #fff;
+        text-decoration: none;
+        padding: 12px 28px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: background 0.15s;
+      }
+
+      .open-btn:hover {
+        background: var(--color-brand-dark);
+      }
+
+      .offline-maps {
+        margin-top: 36px;
+        text-align: left;
+      }
+
+      .offline-maps h2 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 12px;
+      }
+
+      #offline-map-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      #offline-map-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        cursor: default;
+        background: var(--color-bg);
+      }
+
+      #offline-map-list li .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--color-brand);
+        flex-shrink: 0;
+      }
+
+      .empty-state {
+        font-size: 0.875rem;
+        color: var(--color-text-secondary);
+        font-style: italic;
+        padding: 12px 0;
+      }
+
+      .brand {
+        margin-top: 32px;
+        font-size: 0.8rem;
+        color: var(--color-text-secondary);
+      }
+
+      .brand strong {
+        color: var(--color-brand);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4 4 0 003 15z" />
+          <line x1="12" y1="15" x2="12" y2="9" />
+          <line x1="9" y1="12" x2="15" y2="12" />
+        </svg>
+      </div>
+
+      <h1>You're offline</h1>
+      <p class="subtitle">
+        No internet connection detected. Your locally saved maps are available below.
+        Changes you make will sync automatically when you reconnect.
+      </p>
+
+      <a href="/" class="open-btn" id="open-app-btn">Open Radiant Mind</a>
+
+      <div class="offline-maps">
+        <h2>Available offline</h2>
+        <ul id="offline-map-list">
+          <li class="empty-state">Loading offline maps…</li>
+        </ul>
+      </div>
+
+      <p class="brand">
+        <strong>Radiant Mind</strong> — offline-first mind mapping
+      </p>
+    </div>
+
+    <script>
+      // Hydrate the offline maps list from the Service Worker cache
+      (async function () {
+        const list = document.getElementById('offline-map-list');
+        try {
+          const cache = await caches.open('api-maps-v1');
+          const keys = await cache.keys();
+          const mapKeys = keys.filter((r) => r.url.includes('/api/maps'));
+          if (mapKeys.length === 0) {
+            list.innerHTML =
+              '<li class="empty-state">No offline maps available yet. Open maps while online to cache them.</li>';
+            return;
+          }
+          list.innerHTML = '';
+          for (const req of mapKeys) {
+            const response = await cache.match(req);
+            if (!response) continue;
+            const data = await response.json();
+            const maps = Array.isArray(data) ? data : [data];
+            maps.forEach((m) => {
+              if (!m || !m.title) return;
+              const li = document.createElement('li');
+              li.innerHTML = '<span class="dot"></span>' + escapeHtml(m.title || 'Untitled');
+              list.appendChild(li);
+            });
+          }
+          if (list.children.length === 0) {
+            list.innerHTML = '<li class="empty-state">No offline maps found.</li>';
+          }
+        } catch (err) {
+          list.innerHTML =
+            '<li class="empty-state">Unable to load offline maps.</li>';
+        }
+      })();
+
+      function escapeHtml(str) {
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+      }
+
+      // Re-enable "Open app" button only when online
+      window.addEventListener('online', () => {
+        const btn = document.getElementById('open-app-btn');
+        if (btn) btn.href = '/';
+      });
+    </script>
+  </body>
+</html>

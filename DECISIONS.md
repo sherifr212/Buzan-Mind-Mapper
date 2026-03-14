@@ -44,3 +44,21 @@
 **Decision:** Set depth-0 font to 22px. This satisfies AT-LE-030 (22 ≥ 14×1.5=21) while remaining close to the spec intent. ACCEPTANCE_TESTS.md wins per CLAUDE.md rule.
 **Reason:** The AT gate is the exit condition. The 4px increase is minimal and maintains correct visual hierarchy.
 
+
+### Sprint 22: AT-PWA-003 and AT-PWA-004 — Manual Device Verification
+**Context:** Android Chrome install (AT-PWA-003) and iOS Safari Add to Home Screen (AT-PWA-004) require physical device testing that cannot be automated in Playwright.
+**Options considered:** Emulation via Playwright device profiles; real device testing.
+**Decision:** Both marked as "verified manually by human on real device before sprint close" per PROJECT_PLAN.md instruction.
+**Reason:** PWA install flow differs significantly between emulated and real mobile browsers. The spec explicitly designates these as manual verification tests.
+
+### Sprint 22: SWUpdateBanner — Plain SW API instead of virtual:pwa-register/react
+**Context:** SWUpdateBanner is housed in @bmm/ui which doesn't have vite-plugin-pwa as a dependency. The virtual module `virtual:pwa-register/react` is only available in the vite build context of the web app.
+**Options considered:** (1) Move component to web app; (2) Add vite-plugin-pwa to @bmm/ui; (3) Use plain ServiceWorker API.
+**Decision:** Implemented using plain ServiceWorker API (navigator.serviceWorker.getRegistration, updatefound events, controllerchange).
+**Reason:** Keeps the dependency boundary clean. @bmm/ui should not depend on a vite build plugin. The plain SW API achieves the same functionality.
+
+### Sprint 22: Page title updated from "Buzan Mind Mapper" to "Radiant Mind"
+**Context:** PWA manifest requires `name: "Radiant Mind"` per Tech Spec. The index.html title and App.tsx h1 were still using the old name.
+**Options considered:** Keep old name in App; update everywhere.
+**Decision:** Updated index.html title, App.tsx h1, and smoke.spec.ts to "Radiant Mind".
+**Reason:** Consistency with the PWA manifest name field and brand identity.

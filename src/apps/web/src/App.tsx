@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { EditableCanvas, PersonalStyleMode, TutorialFlow, useUserProgressStore } from '@bmm/ui';
+import { EditableCanvas, PersonalStyleMode, TutorialFlow, useUserProgressStore, InstallBanner, SWUpdateBanner, triggerInstallPrompt } from '@bmm/ui';
 import fixtureSimple from './fixtures/fixture-simple.bmm.json';
 import fixtureEmpty from './fixtures/fixture-empty.bmm.json';
 import fixtureTextCentral from './fixtures/fixture-text-central.bmm.json';
@@ -101,6 +101,40 @@ function MapRoute() {
   return <MapEditorPage mapId={mapId} />;
 }
 
+// ─── Settings Page ────────────────────────────────────────────────────────────
+
+function SettingsPage() {
+  return (
+    <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: 480, margin: '0 auto' }}>
+      <h1 style={{ fontSize: 22, marginBottom: 24 }}>Settings</h1>
+      <section>
+        <h2 style={{ fontSize: 16, marginBottom: 12 }}>App</h2>
+        <button
+          data-testid="settings-install-btn"
+          onClick={() => triggerInstallPrompt()}
+          style={{
+            display: 'block',
+            width: '100%',
+            textAlign: 'left',
+            padding: '12px 16px',
+            border: '1px solid #e5e7eb',
+            borderRadius: 8,
+            background: '#f9fafb',
+            cursor: 'pointer',
+            fontSize: 14,
+            marginBottom: 8,
+          }}
+        >
+          📲 Install App
+        </button>
+      </section>
+      <p style={{ marginTop: 24 }}>
+        <Link to="/">← Home</Link>
+      </p>
+    </div>
+  );
+}
+
 // ─── Home Page ────────────────────────────────────────────────────────────────
 
 function HomePage() {
@@ -111,7 +145,7 @@ function HomePage() {
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Buzan Mind Mapper</h1>
+      <h1>Radiant Mind</h1>
 
       {/* Map progress tracker — always visible */}
       <div
@@ -158,6 +192,9 @@ function HomePage() {
       <p style={{ fontSize: 13, color: '#64748b', marginTop: 8 }}>
         Your saved maps will appear here once you sign in.
       </p>
+      <li>
+        <Link to="/settings">Settings</Link>
+      </li>
     </div>
   );
 }
@@ -192,7 +229,10 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/reviews" element={<ReviewDashboard />} />
         <Route path="/review/check/:mapId" element={<QuickMindMapCheckPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
+      <InstallBanner />
+      <SWUpdateBanner />
     </BrowserRouter>
   );
 }
