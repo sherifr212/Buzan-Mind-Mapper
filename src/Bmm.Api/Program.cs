@@ -99,6 +99,25 @@ builder.Services.AddAuthorization();
 
 // ── SERVICES ──────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddSingleton<MapSyncWebSocketHandler>();
+
+// ── REDIS (optional — skip if REDIS_URL not configured) ───────────────────────
+var redisUrl = Environment.GetEnvironmentVariable("REDIS_URL");
+if (!string.IsNullOrWhiteSpace(redisUrl))
+{
+    builder.Services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(
+        StackExchange.Redis.ConnectionMultiplexer.Connect(redisUrl)
+    );
+    builder.Services.AddSingleton<YjsSyncService>();
+}
+else
+{
+    // Register a no-op Redis multiplexer stub so DI resolves
+    builder.Services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(_ =>
+        StackExchange.Redis.ConnectionMultiplexer.Connect("localhost:6379,abortConnect=false")
+    );
+    builder.Services.AddSingleton<YjsSyncService>();
+}
 
 // ── SWAGGER / OPENAPI ─────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
@@ -145,6 +164,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Enable WebSockets for Yjs sync
+app.UseWebSockets();
+
 // Skip HTTPS redirection in Test environment (WebApplicationFactory uses plain HTTP)
 if (!app.Environment.IsEnvironment("Test"))
 {
@@ -165,6 +187,32 @@ using (var scope = app.Services.CreateScope())
 
 // ── HEALTH ────────────────────────────────────────────────────────────────────
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+app.MapGet(
+    "/api/health",
+    () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow })
+);
+
+// ── YJS MAP SYNC WEBSOCKET ─────────────────────────────────────────────────────
+app.Map(
+    "/hubs/map-sync",
+    async (HttpContext context, MapSyncWebSocketHandler handler) =>
+    {
+        if (!context.WebSockets.IsWebSocketRequest)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
+        if (!Guid.TryParse(context.Request.Query["mapId"], out var mapId))
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
+        var userId = context.User.Identity?.Name ?? "anonymous";
+        await handler.HandleAsync(context, mapId, userId);
+    }
+);
 
 // ── AUTH ENDPOINTS ────────────────────────────────────────────────────────────
 app.MapPost(

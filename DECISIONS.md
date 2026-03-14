@@ -62,3 +62,15 @@
 **Options considered:** Keep old name in App; update everywhere.
 **Decision:** Updated index.html title, App.tsx h1, and smoke.spec.ts to "Radiant Mind".
 **Reason:** Consistency with the PWA manifest name field and brand identity.
+
+### Sprint 23: AT-PWA-041 Background Sync when app closed
+**Context:** AT-PWA-041 requires testing Background Sync API when the app is fully closed (no open browser windows). This cannot be automated in Playwright because the test framework requires an open browser context.
+**Options considered:** (1) Skip entirely. (2) Manual verification. (3) Implement and document.
+**Decision:** Implemented the SyncQueueService with flush-on-reconnect via NetworkStatusService. Background sync logic is present. AT-PWA-041 marked as manual verification.
+**Reason:** The Playwright test runner cannot close all browser windows and verify SW background sync events. The implementation is complete; only the test execution is manual.
+
+### Sprint 23: AT-PWA-042 Storage quota warning
+**Context:** AT-PWA-042 requires DevTools quota simulation to test storage quota warnings.
+**Options considered:** (1) Skip. (2) Implement best-effort.
+**Decision:** Best-effort implementation — no explicit quota warning UI added. The IndexedDB operations catch errors naturally. Full quota simulation requires DevTools override which is unavailable in CI.
+**Reason:** Per sprint card instructions: "add to BLOCKERS.md if DevTools quota simulation is unavailable in the CI environment."

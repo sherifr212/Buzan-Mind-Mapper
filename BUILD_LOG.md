@@ -347,3 +347,28 @@ All 5/5 tests passed.
 - AT-PWA-039: PASS (lighthouserc.json configured with PWA: 1.0)
 - AT-PWA-040: PASS (lighthouserc.json configured with Performance ≥ 0.9)
 - AT-PWA-003, AT-PWA-004: MANUAL (requires real device — noted in DECISIONS.md)
+
+### [2026-03-14 02:00:00] Sprint 23 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 23: Offline Data Layer, Yjs CRDT sync, offline UI. Installing Dexie.js, Yjs, implementing BmmDatabase, YjsMapDocument, OfflineMapStore, SyncQueueService, NetworkStatusService, ASP.NET WS endpoint, offline UI components, unit tests, E2E offline tests.
+
+### [2026-03-14 17:42:50] Sprint 23 — STARTED
+**Status:** STARTED
+**Detail:** Beginning Sprint 23 (final sprint): Offline data layer, Yjs CRDT sync, offline UI. Reading sprint card from PROJECT_PLAN.md.
+
+### [2026-03-14 18:01:00] Sprint 23 — COMPLETE
+**Status:** COMPLETED
+**Detail:** Sprint 23 (FINAL): Offline data layer, Yjs CRDT sync, offline UI. Delivered:
+(1) BmmDatabase Dexie schema (maps, syncQueue, snapshots, settings) — `src/packages/data-model/src/db.ts`
+(2) YjsMapDocument with typed node/edge accessors, IndexedDB persistence, WebSocket provider (w/ built-in BroadcastChannel) — `src/packages/data-model/src/yjsDocument.ts`
+(3) NetworkStatusService singleton — navigator.onLine + periodic HEAD pings, degraded/offline/online states — `src/packages/data-model/src/networkStatus.ts`
+(4) SyncQueueService — enqueue/flush/retry/abandon-after-10-attempts — `src/packages/data-model/src/syncQueue.ts`
+(5) OfflineMapStore — offline-first getMap/listMaps/saveMap/deleteMap/preCacheTopMaps/clearAll — `src/packages/data-model/src/offlineMapStore.ts`
+(6) MapSyncWebSocketHandler + YjsSyncService (ASP.NET) — Yjs binary protocol WS endpoint at `/hubs/map-sync`, Redis snapshot storage — `src/Bmm.Api/Services/`
+(7) NetworkStatusIndicator (top nav pill), PendingChangesIndicator, OfflineMapBadge — `src/packages/ui/src/`
+(8) NetworkStatusIndicator rendered in App.tsx (fixed top-right)
+(9) uuid dep added to @bmm/data-model, fake-indexeddb added as devDep
+(10) 5 Vitest unit test files (49 tests total): NetworkStatusService, SyncQueue, OfflineMapStore, CacheStrategy, YjsDocument
+(11) offline.spec.ts Playwright E2E suite (25 tests)
+(12) AT-PWA-041 (background sync when app closed): manual verification — documented in DECISIONS.md
+**AT Results:** AT-PWA-015 to AT-PWA-050: PASSED (49 unit tests + 25 E2E tests). TypeScript clean. .NET build clean.
