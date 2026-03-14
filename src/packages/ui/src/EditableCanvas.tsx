@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState, memo } from 'react';
-import ReactFlow, { Background, Controls, MiniMap, Position } from 'reactflow';
+import ReactFlow, { Background, Controls, MiniMap, Position, useViewport } from 'reactflow';
 import type { Node, Edge, NodeMouseHandler, NodeDragHandler, NodeProps } from 'reactflow';
 import 'reactflow/dist/style.css';
 import type { MindMap, BranchNode } from '@bmm/data-model';
@@ -356,6 +356,20 @@ function generateLinearOutline(map: MindMap): string {
   return result;
 }
 
+// ─── ZoomAwareMiniMap (must be inside ReactFlow context) ─────────────────────
+
+function ZoomAwareMiniMap() {
+  const { zoom } = useViewport();
+  if (zoom < 1.5) return null;
+  return (
+    <MiniMap
+      style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
+      maskColor="rgba(59,130,246,0.15)"
+      nodeColor="#1e293b"
+    />
+  );
+}
+
 // ─── EditableCanvas ───────────────────────────────────────────────────────────
 
 export interface EditableCanvasProps {
@@ -435,6 +449,9 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
   const [reflectionText, setReflectionText] = useState('');
   // Sprint 15: Online/offline state for AT-NF-004
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  // Sprint 18: Branch Pivot state for AT-RE-041
+  const [pivotBranchId, setPivotBranchId] = useState<string | null>(null);
+  const [pivotBreadcrumbs, setPivotBreadcrumbs] = useState<Array<{ id: string | null; label: string }>>([]);
   // Track which lawIds have already been added to coachQueue to avoid duplicates
   const firedCoachIds = useRef<Set<string>>(new Set());
 
@@ -1340,11 +1357,13 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
           elementsSelectable
           panOnDrag
           zoomOnScroll
+          minZoom={0.1}
+          maxZoom={4}
           style={{ width: '100%', height: '100%' }}
         >
           <Background />
           <Controls />
-          <MiniMap />
+          <ZoomAwareMiniMap />
         </ReactFlow>
 
         {blankCoachingId && (
@@ -1405,8 +1424,157 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
             >
               Mark cluster as complete
             </button>
+            {/* Sprint 18: Branch Pivot */}
+            <button
+              data-testid="ctx-pivot-centre"
+              onClick={() => {
+                const nodeId = contextMenu.nodeId;
+                setContextMenu(null);
+                if (!map) return;
+                const branch = map.branches.find((b) => b.id === nodeId);
+                if (!branch) return;
+                // Build breadcrumb path
+                const path: Array<{ id: string | null; label: string }> = [
+                  { id: null, label: map.title ?? 'Map' },
+                ];
+                // Walk up the parent chain to build full breadcrumb
+                let current = branch;
+                const parents: typeof path = [];
+                while (current.parentId) {
+                  const parent = map.branches.find((b) => b.id === current.parentId);
+                  if (!parent) break;
+                  parents.unshift({ id: parent.id, label: parent.keyword });
+                  current = parent;
+                }
+                path.push(...parents);
+                path.push({ id: branch.id, label: branch.keyword });
+                setPivotBreadcrumbs(path);
+                setPivotBranchId(nodeId);
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 16px',
+                background: 'none',
+                border: 'none',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: 13,
+                borderTop: '1px solid #f1f5f9',
+                color: '#3b82f6',
+              }}
+            >
+              Pivot: Make this the centre
+            </button>
           </div>
         )}
+
+        {/* Sprint 18: Pivot view — branch becomes the centre */}
+        {pivotBranchId && map && (() => {
+          const pivotBranch = map.branches.find((b) => b.id === pivotBranchId);
+          const pivotChildren = pivotBranch
+            ? map.branches.filter((b) => b.parentId === pivotBranchId && !b.blankLine)
+            : [];
+          return (
+            <div
+              data-testid="pivot-view"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'white',
+                zIndex: 2000,
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              {/* Breadcrumb navigation */}
+              <div
+                data-testid="pivot-breadcrumb"
+                style={{
+                  padding: '10px 16px',
+                  background: '#1e293b',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontSize: 13,
+                }}
+              >
+                {pivotBreadcrumbs.map((crumb, i) => (
+                  <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {i > 0 && <span style={{ opacity: 0.5 }}>›</span>}
+                    <button
+                      data-testid={`breadcrumb-${i}`}
+                      onClick={() => {
+                        if (crumb.id === null) {
+                          // Back to root
+                          setPivotBranchId(null);
+                          setPivotBreadcrumbs([]);
+                        } else if (crumb.id !== pivotBranchId) {
+                          setPivotBranchId(crumb.id);
+                          setPivotBreadcrumbs(pivotBreadcrumbs.slice(0, i + 1));
+                        }
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: crumb.id === pivotBranchId ? 'white' : '#93c5fd',
+                        cursor: crumb.id === pivotBranchId ? 'default' : 'pointer',
+                        fontSize: 13,
+                        padding: '2px 4px',
+                        textDecoration: crumb.id !== pivotBranchId ? 'underline' : 'none',
+                      }}
+                    >
+                      {crumb.label}
+                    </button>
+                  </span>
+                ))}
+              </div>
+              {/* Pivot canvas content */}
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 24, padding: 40 }}>
+                <div
+                  data-testid="pivot-centre"
+                  style={{
+                    width: 120,
+                    height: 80,
+                    borderRadius: 8,
+                    background: pivotBranch?.color ?? '#1e293b',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                  }}
+                >
+                  {pivotBranch?.keyword ?? ''}
+                </div>
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  {pivotChildren.map((child) => (
+                    <div
+                      key={child.id}
+                      data-testid={`pivot-child-${child.id}`}
+                      style={{
+                        padding: '8px 16px',
+                        background: child.color ?? '#e2e8f0',
+                        color: 'white',
+                        borderRadius: 6,
+                        fontSize: 14,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {child.keyword}
+                    </div>
+                  ))}
+                  {pivotChildren.length === 0 && (
+                    <p style={{ color: '#94a3b8', fontSize: 14 }}>No sub-branches</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Outline export modal */}
         {outlineText !== null && (

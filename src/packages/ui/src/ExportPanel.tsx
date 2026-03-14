@@ -42,7 +42,7 @@ export function ExportPanel({ map, onImport }: ExportPanelProps) {
   const handlePdf = async () => {
     const svg = exportToSvg(map);
     const bytes = await exportToPdf(svg);
-    downloadBlob(new Blob([bytes], { type: 'application/pdf' }), `${map.title}.pdf`);
+    downloadBlob(new Blob([bytes.buffer as ArrayBuffer], { type: 'application/pdf' }), `${map.title}.pdf`);
   };
 
   const handleDocx = async () => {

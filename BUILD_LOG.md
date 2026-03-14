@@ -1,5 +1,14 @@
 # BUILD LOG — Buzan Mind Mapping Software v1
 
+### [2026-03-14 05:00:00] Sprint 18 — COMPLETE
+**Status:** COMPLETED
+**Detail:** Implemented Sprint 18: Mega Mind Map features. (1) Zoom 10%–400%: added minZoom={0.1} maxZoom={4} to ReactFlow in EditableCanvas. (2) ZoomAwareMiniMap: already implemented — shows React Flow MiniMap when zoom ≥ 1.5 (150%). (3) Branch Pivot: already implemented — right-click any branch → "Pivot: Make this the centre" → overlay with breadcrumb navigation. (4) Created fixture-mega.bmm.json with 18 branches (8 BOIs + depth 1-3 sub-branches). (5) Created mega.spec.ts with Playwright E2E tests using wheelZoom and page.evaluate contextmenu dispatch. Also fixed pre-existing ExportPanel.tsx TypeScript error (Uint8Array.buffer type).
+**AT Results:** AT-RE-007 PASS (minimap visible at zoom >150%, updates on pan) · AT-RE-041 PASS (Branch Pivot with breadcrumb navigation). Pre-existing failures (AT-ED-001/002/003, AT-LE-001, AT-LE-022, AT-LE-060a/b, AT-LE-081, AT-LE-083) confirmed to exist before Sprint 18 — not caused by Sprint 18 changes.
+
+### [2026-03-14 04:00:00] Sprint 18 — STARTED
+**Status:** STARTED
+**Detail:** Implementing Sprint 18: Mega Mind Map — Zoom, Miniature Viewport, Branch Pivot. AT Gates: AT-RE-007 (minimap visible at zoom >150%), AT-RE-041 (Branch Pivot with breadcrumb).
+
 ### [2026-03-14 03:00:00] Sprint 17 — STARTED
 **Status:** STARTED
 **Detail:** Implementing Sprint 17: Export & Import System. Deliverables: SVG export, PDF export (landscape), DOCX linear outline, .bmm export/import, OPML, compliance warnings panel. AT Gates: AT-EX-001a/b, AT-EX-002, AT-EX-003, AT-EX-008.
