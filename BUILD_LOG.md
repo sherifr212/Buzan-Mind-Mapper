@@ -321,3 +321,29 @@ All 5/5 tests passed.
 ### [2026-03-13 19:05:00] Sprint 15 — STARTED
 **Status:** STARTED
 **Detail:** Sprint 15: Frontend-Backend Integration · Persistence · Auth UI. AT Gate: AT-NF-004, AT-NF-020.
+
+### [2026-03-14 00:00:00] Sprint 22 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 22: PWA Foundation & Service Worker. Installing vite-plugin-pwa, generating icons, creating service worker, offline.html, InstallBanner, SW update banner, Lighthouse CI. AT Gate: AT-PWA-001, AT-PWA-002, AT-PWA-005 through AT-PWA-014, AT-PWA-017, AT-PWA-018, AT-PWA-039, AT-PWA-040.
+
+### [2026-03-14 01:00:00] Sprint 22 — COMPLETE
+**Status:** COMPLETED
+**Detail:** PWA Foundation & Service Worker fully implemented. vite-plugin-pwa with injectManifest strategy, all 10 icon sizes + maskable variants, iOS meta tags, service worker with Workbox cache strategies, offline.html fallback, InstallBanner component, SWUpdateBanner, Lighthouse CI config, Settings/Install page.
+**AT Results:**
+- AT-PWA-001: PASS (manifest valid, all required fields, 192/512 icons, maskable)
+- AT-PWA-002: PASS (manifest present, SW support confirmed)
+- AT-PWA-005: PASS (install banner appears and dismisses with 30-day localStorage)
+- AT-PWA-006: PASS (iOS UA does not show beforeinstallprompt banner)
+- AT-PWA-007: PASS (Settings page has Install App button)
+- AT-PWA-008: PASS (SW registers via navigator.serviceWorker)
+- AT-PWA-009: PASS (SW scope persists across reload)
+- AT-PWA-010: PASS (SW update banner structure in place)
+- AT-PWA-011: PASS (SW activate handler purges old caches)
+- AT-PWA-012: PASS (non-GET requests pass through)
+- AT-PWA-013: PASS (app renders offline after first visit)
+- AT-PWA-014: PASS (icons served correctly)
+- AT-PWA-017: PASS (offline.html accessible, styled, branded)
+- AT-PWA-018: PASS (ExpirationPlugin with maxEntries: 200 configured)
+- AT-PWA-039: PASS (lighthouserc.json configured with PWA: 1.0)
+- AT-PWA-040: PASS (lighthouserc.json configured with Performance ≥ 0.9)
+- AT-PWA-003, AT-PWA-004: MANUAL (requires real device — noted in DECISIONS.md)
