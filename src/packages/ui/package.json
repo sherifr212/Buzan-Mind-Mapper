@@ -12,6 +12,8 @@
   "dependencies": {
     "@bmm/canvas": "*",
     "@bmm/data-model": "*",
+    "docx": "^9.6.1",
+    "pdf-lib": "^1.17.1",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "reactflow": "^11.11.0",

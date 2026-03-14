@@ -1,5 +1,14 @@
 # BUILD LOG — Buzan Mind Mapping Software v1
 
+### [2026-03-14 03:00:00] Sprint 17 — STARTED
+**Status:** STARTED
+**Detail:** Implementing Sprint 17: Export & Import System. Deliverables: SVG export, PDF export (landscape), DOCX linear outline, .bmm export/import, OPML, compliance warnings panel. AT Gates: AT-EX-001a/b, AT-EX-002, AT-EX-003, AT-EX-008.
+
+### [2026-03-14 03:30:00] Sprint 17 — COMPLETED
+**Status:** COMPLETED
+**Detail:** Export & Import System complete. ExportService.ts (SVG/PDF/DOCX/BMM/OPML exporters), ImportService.ts (BMM import + compliance checker), ExportPanel.tsx (UI component in toolbar). Installed pdf-lib + docx. ExportService.test.ts (vitest: AT-EX-001b landscape PDF, AT-EX-003 round-trip). export.spec.ts (Playwright: AT-EX-001a SVG text elements, AT-EX-002 DOCX order, AT-EX-008 compliance panel).
+**AT Results:** AT-EX-001a PASSED, AT-EX-001b PASSED, AT-EX-002 PASSED, AT-EX-003 PASSED, AT-EX-008 PASSED. Total: 5/5 passed.
+
 ### [2026-03-14 02:00:00] Sprint 16 — STARTED
 **Status:** STARTED
 **Detail:** Implementing Sprint 16: Review & Reinforcement System. Deliverables: ReviewScheduleService (C#) with unit test (AT-RV-001), ReviewStore (TS/localStorage), ReviewNotificationBell, QuickMindMapCheck, ComparisonView, Long-Term Memory badge + Archive, Playwright E2E tests.

@@ -19,6 +19,7 @@ import { CoachToast } from './CoachToast';
 import { BOIWizard } from './BOIWizard';
 import { BuzanHealthPanel } from './BuzanHealthPanel';
 import { MentalBlockPanel } from './MentalBlockPanel';
+import { ExportPanel } from './ExportPanel';
 
 // ─── EditableCanvas ───────────────────────────────────────────────────────────
 // Interactive mind map editor built on React Flow.
@@ -934,6 +935,7 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         >
           Save
         </button>
+        {map && <ExportPanel map={map} />}
         <button
           onClick={() => addBlankLine(selectedBranchId)}
           data-testid="add-branch"

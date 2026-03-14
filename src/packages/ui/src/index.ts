@@ -20,3 +20,7 @@ export { MentalBlockPanel } from './MentalBlockPanel';
 export { TutorialFlow } from './TutorialFlow';
 export type { TutorialFlowProps } from './TutorialFlow';
 export { useUserProgressStore } from './UserProgressStore';
+export { ExportPanel } from './ExportPanel';
+export { exportToSvg, exportToBmm, exportToDocx, exportToPdf, exportToOpml, getPdfPageDimensions, getOutlineText, importFromBmm } from './ExportService';
+export { importBmmFile, checkCompliance } from './ImportService';
+export type { ComplianceViolation, ImportResult } from './ImportService';
