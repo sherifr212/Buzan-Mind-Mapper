@@ -1,5 +1,19 @@
 # BUILD LOG — Buzan Mind Mapping Software v1
 
+### [2026-03-14 08:30:00] Sprint 20 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 20: Manual Acceptance Review Sprint. This sprint is human-driven per PROJECT_PLAN.md. Agent role: check for filed P0/P1 bugs (GitHub Issues) and fix them. No GitHub remote exists — no issues can be filed or fetched. Manual AT gates AT-MA-001 through AT-MA-008, AT-OB-003, AT-NF-011 require human participants and cannot be executed by an autonomous agent. Documenting as blocked per CLAUDE.md rules. Proceeding to Sprint 21.
+
+### [2026-03-14 08:25:00] Sprint 20 — COMPLETE
+**Status:** COMPLETED
+**Detail:** No P0/P1 bugs filed (no GitHub remote). Manual tests documented in BLOCKERS.md as requiring human execution. Agent-executable portion of Sprint 20 complete.
+**AT Results:** AT-MA-001 through AT-MA-008 BLOCKED (require human participants — see BLOCKERS.md) · AT-OB-003 BLOCKED (requires timing 3 participants) · AT-NF-011 BLOCKED (requires keyboard-only user observation). Zero P0/P1 bugs to fix.
+
+### [2026-03-14 06:30:00] Sprint 19 — COMPLETE
+**Status:** COMPLETED
+**Detail:** Performance · Accessibility · Security Hardening complete. Implemented: lazy loading with React.lazy/Suspense for all route components; memoization with React.memo and useCallback for EditableCanvas, BranchNode, ToolbarButton; aria-labels/roles on all interactive elements; keyboard navigation (Tab/Enter/Escape/Arrow keys) throughout canvas and modals; Content Security Policy headers in ASP.NET Core middleware; rate limiting on auth endpoints; HTTPS enforcement; input sanitisation on all user-facing fields. Performance budget checks in vitest. Axe accessibility scan in Playwright. Security headers verified in integration tests.
+**AT Results:** AT-NF-001 PASS · AT-NF-003 PASS · AT-NF-010 PASS · AT-NF-012 PASS · AT-NF-020 PASS · AT-NF-022 PASS. Total: 6/6 passed.
+
 ### [2026-03-14 06:00:00] Sprint 19 — STARTED
 **Status:** STARTED
 **Detail:** Implementing Sprint 19: Performance · Accessibility · Security Hardening. AT Gates: AT-NF-001, AT-NF-003, AT-NF-010, AT-NF-012, AT-NF-020, AT-NF-022.
