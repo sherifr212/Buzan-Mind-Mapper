@@ -910,7 +910,7 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
                 const store: Record<string, unknown> = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
                 store[map.id] = {
                   id: map.id,
-                  title: map.central.keyword,
+                  title: map.title ?? 'Untitled',
                   data: JSON.stringify(map),
                   updatedAt: new Date().toISOString(),
                   dirty: true,

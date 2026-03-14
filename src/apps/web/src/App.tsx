@@ -10,6 +10,8 @@ import fixtureCluster from './fixtures/fixture-cluster.bmm.json';
 import { TutorialPage } from './TutorialPage';
 import { LoginPage } from './LoginPage';
 import { SignupPage } from './SignupPage';
+import { ReviewDashboard } from './ReviewDashboard';
+import { QuickMindMapCheckPage } from './QuickMindMapCheck';
 import type { MindMap } from '@bmm/data-model';
 
 // ─── Fixture registry ─────────────────────────────────────────────────────────
@@ -145,6 +147,9 @@ function HomePage() {
         <li>
           <Link to="/signup">Create Account</Link>
         </li>
+        <li>
+          <Link to="/reviews">Review Dashboard</Link>
+        </li>
       </ul>
       <p style={{ fontSize: 13, color: '#64748b', marginTop: 8 }}>
         Your saved maps will appear here once you sign in.
@@ -181,6 +186,8 @@ function App() {
         <Route path="/tutorial" element={<TutorialPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/reviews" element={<ReviewDashboard />} />
+        <Route path="/review/check/:mapId" element={<QuickMindMapCheckPage />} />
       </Routes>
     </BrowserRouter>
   );

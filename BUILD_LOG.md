@@ -1,5 +1,14 @@
 # BUILD LOG — Buzan Mind Mapping Software v1
 
+### [2026-03-14 02:00:00] Sprint 16 — STARTED
+**Status:** STARTED
+**Detail:** Implementing Sprint 16: Review & Reinforcement System. Deliverables: ReviewScheduleService (C#) with unit test (AT-RV-001), ReviewStore (TS/localStorage), ReviewNotificationBell, QuickMindMapCheck, ComparisonView, Long-Term Memory badge + Archive, Playwright E2E tests.
+
+### [2026-03-14 02:30:00] Sprint 16 — COMPLETED
+**Status:** COMPLETED
+**Detail:** Review & Reinforcement System complete. Backend: ReviewScheduleService.cs (6 Buzan intervals: 20min/1day/1week/1month/3months/6months) + xUnit unit test. Frontend: ReviewStore.ts (localStorage, createReviewSchedule/completeReview/forceHelpers), ReviewDashboard.tsx (notification bell, active+archive sections), QuickMindMapCheck.tsx (blank canvas + "Recreate from memory" prompt), ComparisonView.tsx (amber/green/blue branch diff), review.spec.ts (4 E2E tests). Routes added: /reviews, /review/check/:mapId.
+**AT Results:** AT-RV-001 PASSED (unit: 6 entries, correct intervals, all completed=false), AT-RV-002 PASSED (rationale + two buttons), AT-RV-003 PASSED (blank canvas + recall prompt), AT-RV-004 PASSED (comparison view with colour coding), AT-RV-005 PASSED (LTM badge + archive). Total: 5/5 passed.
+
 ### [2026-03-14 01:00:00] Sprint 15 — STARTED
 **Status:** STARTED
 **Detail:** Resuming Sprint 15: Frontend–Backend Integration · Persistence · Auth UI. Partial implementation found uncommitted: AuthStore.ts, LoginPage.tsx, SignupPage.tsx, offlineStore.ts, integration.spec.ts, updated App.tsx, api-client index.ts, EditableCanvas.tsx. Running AT Gate tests: AT-NF-004 (offline+sync) and AT-NF-020 (HTTPS).
