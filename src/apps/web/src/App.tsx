@@ -8,6 +8,8 @@ import fixtureFlat from './fixtures/fixture-flat.bmm.json';
 import fixtureHealth from './fixtures/fixture-health.bmm.json';
 import fixtureCluster from './fixtures/fixture-cluster.bmm.json';
 import { TutorialPage } from './TutorialPage';
+import { LoginPage } from './LoginPage';
+import { SignupPage } from './SignupPage';
 import type { MindMap } from '@bmm/data-model';
 
 // ─── Fixture registry ─────────────────────────────────────────────────────────
@@ -137,7 +139,16 @@ function HomePage() {
         <li>
           <Link to="/tutorial">Start Tutorial</Link>
         </li>
+        <li>
+          <Link to="/login">Sign In</Link>
+        </li>
+        <li>
+          <Link to="/signup">Create Account</Link>
+        </li>
       </ul>
+      <p style={{ fontSize: 13, color: '#64748b', marginTop: 8 }}>
+        Your saved maps will appear here once you sign in.
+      </p>
     </div>
   );
 }
@@ -168,6 +179,8 @@ function App() {
         <Route path="/map/:mapId" element={<MapRoute />} />
         <Route path="/personal-style" element={<PersonalStylePage />} />
         <Route path="/tutorial" element={<TutorialPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -432,8 +432,22 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
   const [outlineText, setOutlineText] = useState<string | null>(null);
   const [showReflection, setShowReflection] = useState(false);
   const [reflectionText, setReflectionText] = useState('');
+  // Sprint 15: Online/offline state for AT-NF-004
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   // Track which lawIds have already been added to coachQueue to avoid duplicates
   const firedCoachIds = useRef<Set<string>>(new Set());
+
+  // Sprint 15: Online/offline event listeners for AT-NF-004
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Native event listeners to ensure branch label clicks/hovers update selection even
   // when React synthetic events are bypassed (e.g. Playwright force:true clicks).
@@ -871,9 +885,43 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         >
           📋 Export Outline
         </button>
+        {!isOnline && (
+          <span
+            data-testid="offline-indicator"
+            style={{
+              padding: '2px 8px',
+              background: '#dc2626',
+              color: 'white',
+              borderRadius: 4,
+              fontSize: 11,
+            }}
+          >
+            Offline &mdash; edits saved locally
+          </span>
+        )}
         <button
           data-testid="save-map-btn"
-          onClick={() => setShowReflection(true)}
+          onClick={() => {
+            // Save to localStorage offline store
+            if (map) {
+              try {
+                const STORAGE_KEY = 'bmm-offline-maps';
+                const raw = localStorage.getItem(STORAGE_KEY);
+                const store: Record<string, unknown> = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+                store[map.id] = {
+                  id: map.id,
+                  title: map.central.keyword,
+                  data: JSON.stringify(map),
+                  updatedAt: new Date().toISOString(),
+                  dirty: true,
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+              } catch {
+                // localStorage not available — ignore
+              }
+            }
+            setShowReflection(true);
+          }}
           style={{
             padding: '4px 10px',
             fontSize: 12,

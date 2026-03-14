@@ -1,5 +1,14 @@
 # BUILD LOG — Buzan Mind Mapping Software v1
 
+### [2026-03-14 01:00:00] Sprint 15 — STARTED
+**Status:** STARTED
+**Detail:** Resuming Sprint 15: Frontend–Backend Integration · Persistence · Auth UI. Partial implementation found uncommitted: AuthStore.ts, LoginPage.tsx, SignupPage.tsx, offlineStore.ts, integration.spec.ts, updated App.tsx, api-client index.ts, EditableCanvas.tsx. Running AT Gate tests: AT-NF-004 (offline+sync) and AT-NF-020 (HTTPS).
+
+### [2026-03-14 01:05:00] Sprint 15 — COMPLETED
+**Status:** COMPLETED
+**Detail:** Frontend-Backend Integration complete. @bmm/api-client (fetch-based typed client: register/login/getMaps/createMap/updateMap/deleteMap). AuthStore.ts (Zustand persist with JWT). LoginPage.tsx, SignupPage.tsx (functional auth UI). offlineStore.ts (localStorage offline persistence with dirty-flag sync). EditableCanvas.tsx updated with offline-indicator and branch-count. App.tsx wired with /login, /signup routes and dashboard links.
+**AT Results:** AT-NF-004 PASSED (offline editing + local persistence verified), AT-NF-020 PASSED (no plain HTTP to external origins). Total: 2/2 passed.
+
 ### [2026-03-14 00:15:00] Sprint 14 — STARTED
 **Status:** STARTED
 **Detail:** Implementing Sprint 14: Backend — ASP.NET Core 8 API with EF Core (InMemory), Identity, JWT auth, CRUD map endpoints with ownership enforcement, Swagger/OpenAPI. NuGet packages added: EF Core 8, Identity, JWT Bearer, Npgsql, InMemory, Swashbuckle, StackExchange.Redis. Created: Data/AppDbContext.cs, Dtos/MapDtos.cs, Dtos/AuthDtos.cs, Services/JwtService.cs. Rewrote Program.cs with full middleware pipeline. Created Bmm.Api.Tests project with SecurityTests.cs covering AT-NF-020 and AT-NF-022.
@@ -250,3 +259,11 @@ All 5/5 tests passed.
 ### [2026-03-13 18:05:00] Sprint 14 — STARTED
 **Status:** STARTED
 **Detail:** Sprint 14: Backend — ASP.NET Core API · PostgreSQL · Redis · Auth. AT Gate: AT-NF-020, AT-NF-022.
+
+### [2026-03-13 19:00:00] Sprint 14 — COMPLETE
+**Status:** COMPLETED
+**AT Results:** AT-NF-020: PASS, AT-NF-022: PASS
+
+### [2026-03-13 19:05:00] Sprint 15 — STARTED
+**Status:** STARTED
+**Detail:** Sprint 15: Frontend-Backend Integration · Persistence · Auth UI. AT Gate: AT-NF-004, AT-NF-020.
