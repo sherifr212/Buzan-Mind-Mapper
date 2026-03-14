@@ -20,6 +20,7 @@ import { BOIWizard } from './BOIWizard';
 import { BuzanHealthPanel } from './BuzanHealthPanel';
 import { MentalBlockPanel } from './MentalBlockPanel';
 import { ExportPanel } from './ExportPanel';
+import { HierarchyOutlineView } from './HierarchyOutlineView';
 
 // ─── EditableCanvas ───────────────────────────────────────────────────────────
 // Interactive mind map editor built on React Flow.
@@ -297,7 +298,7 @@ function TextImageCoaching() {
         data-testid="draw-image-btn"
         style={{
           padding: '6px 12px',
-          background: '#43a047',
+          background: '#2e7d32',
           color: 'white',
           border: 'none',
           borderRadius: 4,
@@ -438,6 +439,7 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
   const [newCodeColor, setNewCodeColor] = useState('#E53935');
   const [colorInheritTooltipId, setColorInheritTooltipId] = useState<string | null>(null);
   const [showHealthPanel, setShowHealthPanel] = useState(false);
+  const [showHierarchyOutline, setShowHierarchyOutline] = useState(false);
   const [colourBlindMode, setColourBlindMode] = useState(false);
   // Context menu state for right-click BOI actions
   const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
@@ -943,7 +945,7 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
           style={{
             padding: '4px 10px',
             fontSize: 12,
-            background: '#059669',
+            background: '#047857',
             color: 'white',
             border: 'none',
             borderRadius: 4,
@@ -1073,9 +1075,17 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         <button
           onClick={() => setShowHealthPanel((v) => !v)}
           data-testid="health-panel-open-btn"
-          style={{ padding: '4px 10px', cursor: 'pointer', fontSize: 12, background: '#1e88e5', color: 'white', border: 'none', borderRadius: 4 }}
+          style={{ padding: '4px 10px', cursor: 'pointer', fontSize: 12, background: '#1565C0', color: 'white', border: 'none', borderRadius: 4 }}
         >
           ❤ Health
+        </button>
+        <button
+          onClick={() => setShowHierarchyOutline((v) => !v)}
+          data-testid="hierarchy-outline-btn"
+          aria-expanded={showHierarchyOutline}
+          style={{ padding: '4px 10px', cursor: 'pointer', fontSize: 12, background: showHierarchyOutline ? '#0f766e' : '#455a64', color: 'white', border: 'none', borderRadius: 4 }}
+        >
+          🌲 Outline
         </button>
         <span data-testid="selected-branch-id" style={{ display: 'none' }}>
           {selectedBranchId ?? ''}
@@ -1381,6 +1391,11 @@ export function EditableCanvas({ initialMap }: EditableCanvasProps) {
         {/* Health Panel (HP-001, HP-002, HP-003) */}
         {showHealthPanel && (
           <BuzanHealthPanel map={map} />
+        )}
+
+        {/* Sprint 19: Hierarchy Outline View (AT-NF-012) */}
+        {showHierarchyOutline && (
+          <HierarchyOutlineView map={map} onClose={() => setShowHierarchyOutline(false)} />
         )}
 
         {/* Right-click context menu */}

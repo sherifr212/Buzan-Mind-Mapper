@@ -23,4 +23,5 @@ export { useUserProgressStore } from './UserProgressStore';
 export { ExportPanel } from './ExportPanel';
 export { exportToSvg, exportToBmm, exportToDocx, exportToPdf, exportToOpml, getPdfPageDimensions, getOutlineText, importFromBmm } from './ExportService';
 export { importBmmFile, checkCompliance } from './ImportService';
+export { HierarchyOutlineView } from './HierarchyOutlineView';
 export type { ComplianceViolation, ImportResult } from './ImportService';

@@ -19,5 +19,8 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "npm@10.9.2"
+  "packageManager": "npm@10.9.2",
+  "dependencies": {
+    "@axe-core/playwright": "^4.11.1"
+  }
 }

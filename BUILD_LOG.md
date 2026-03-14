@@ -1,5 +1,9 @@
 # BUILD LOG — Buzan Mind Mapping Software v1
 
+### [2026-03-14 06:00:00] Sprint 19 — STARTED
+**Status:** STARTED
+**Detail:** Implementing Sprint 19: Performance · Accessibility · Security Hardening. AT Gates: AT-NF-001, AT-NF-003, AT-NF-010, AT-NF-012, AT-NF-020, AT-NF-022.
+
 ### [2026-03-14 05:00:00] Sprint 18 — COMPLETE
 **Status:** COMPLETED
 **Detail:** Implemented Sprint 18: Mega Mind Map features. (1) Zoom 10%–400%: added minZoom={0.1} maxZoom={4} to ReactFlow in EditableCanvas. (2) ZoomAwareMiniMap: already implemented — shows React Flow MiniMap when zoom ≥ 1.5 (150%). (3) Branch Pivot: already implemented — right-click any branch → "Pivot: Make this the centre" → overlay with breadcrumb navigation. (4) Created fixture-mega.bmm.json with 18 branches (8 BOIs + depth 1-3 sub-branches). (5) Created mega.spec.ts with Playwright E2E tests using wheelZoom and page.evaluate contextmenu dispatch. Also fixed pre-existing ExportPanel.tsx TypeScript error (Uint8Array.buffer type).

@@ -8,6 +8,7 @@ import fixtureFlat from './fixtures/fixture-flat.bmm.json';
 import fixtureHealth from './fixtures/fixture-health.bmm.json';
 import fixtureCluster from './fixtures/fixture-cluster.bmm.json';
 import fixtureMega from './fixtures/fixture-mega.bmm.json';
+import fixturePerf100 from './fixtures/fixture-perf-100.bmm.json';
 import { TutorialPage } from './TutorialPage';
 import { LoginPage } from './LoginPage';
 import { SignupPage } from './SignupPage';
@@ -26,6 +27,7 @@ const FIXTURES: Record<string, MindMap> = {
   'test-fixture-health': fixtureHealth as unknown as MindMap,
   'test-fixture-cluster': fixtureCluster as unknown as MindMap,
   'test-fixture-mega': fixtureMega as unknown as MindMap,
+  'test-fixture-perf-100': fixturePerf100 as unknown as MindMap,
 };
 
 // ─── Map Editor Page ──────────────────────────────────────────────────────────
