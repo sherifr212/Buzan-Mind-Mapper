@@ -277,13 +277,13 @@ Update it continuously. The human reads this on return to understand everything 
 ---
 
 ## WHEN YOU ARE DONE
-Sprint 21 is the final sprint. When Sprint 21 is committed, you are done.
+Sprint 23 is the final sprint. When Sprint 23 is committed, you are done.
 
 Your final commit message must be exactly:
-`Sprint 21 complete: Production deployment — v1 SHIPPED`
+> `Sprint 23 complete: Offline data layer, Yjs CRDT sync, offline UI`
 
 After this commit, create FINAL_REPORT.md containing:
-- All 22 sprint completion statuses (COMPLETE / BLOCKED)
+- All 24 sprint completion statuses (COMPLETE / BLOCKED)
 - All entries from BLOCKERS.md with suggested resolutions
 - All entries from DECISIONS.md
 - Total number of git commits made

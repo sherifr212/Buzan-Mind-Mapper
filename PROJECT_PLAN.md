@@ -644,19 +644,3 @@ quota simulation is unavailable in the CI environment.
 `Sprint 23 complete: Offline data layer, Yjs CRDT sync, offline UI`
 
 ---
-
-## Updated DONE CONDITION for CLAUDE.md
-
-Replace the existing DONE CONDITION in CLAUDE.md:
-
-**OLD:**
-> Sprint 21 is the final sprint. Your final commit message must be exactly:
-> `Sprint 21 complete: Production deployment — v1 SHIPPED`
-
-**NEW:**
-> Sprint 23 is the final sprint. Your final commit message must be exactly:
-> `Sprint 23 complete: Offline data layer, Yjs CRDT sync, offline UI`
-
-Also update the FINAL_REPORT.md instruction from "22 sprint completion statuses" to
-"24 sprint completion statuses (Sprints 0–23)".
-
