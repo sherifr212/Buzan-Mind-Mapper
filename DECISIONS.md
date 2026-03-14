@@ -1,5 +1,17 @@
 # DECISIONS LOG — Buzan Mind Mapping Software v1
 
+### Sprint 21: Deployment Target — Fly.io for Backend, Vercel for Frontend
+**Context:** Sprint 21 requires deploying backend and frontend to cloud hosting. Multiple options were listed (Azure App Service / Railway / Render / Fly.io for backend; Vercel or Netlify for frontend).
+**Options considered:** (1) Azure App Service — complex, requires Azure subscription setup. (2) Railway — simple but less common for .NET. (3) Render — supports Docker, free tier available. (4) Fly.io — excellent Docker support, free tier, simple config, widely used for .NET containers.
+**Decision:** Fly.io for backend (Dockerfile + fly.toml created), Vercel for frontend (vercel.json created). Upstash for Redis (free tier). Supabase for PostgreSQL (free tier).
+**Reason:** Fly.io is the simplest path for containerised .NET 8 with a free tier. Vercel is the standard for Vite/React static apps. Both support environment variables and CI/CD integration.
+
+### Sprint 21: Sentry Integration — enabled flag guards against empty DSN
+**Context:** Sentry.init() with an empty DSN string would log console warnings in development.
+**Options considered:** (1) Only init Sentry when DSN is non-empty. (2) Use try/catch. (3) Use the built-in `enabled` option.
+**Decision:** Added `enabled: !!import.meta.env.VITE_SENTRY_DSN` to Sentry.init() so Sentry is a no-op locally when DSN is not configured.
+**Reason:** Clean developer experience — no console noise in dev, automatic activation in production when DSN env var is set.
+
 ### Sprint 20: Manual Sprint — Agent Cannot Execute Human-Driven Tests
 **Context:** Sprint 20 is explicitly marked "human-driven, not agent-driven" in PROJECT_PLAN.md. The AT Gate requires manual sign-off for AT-MA-001 through AT-MA-008, AT-OB-003, and AT-NF-011. No GitHub remote exists for filing/retrieving bug issues.
 **Options considered:** (1) Attempt to automate subjective evaluations (coaching tone, animation feel) — not faithful to Buzan methodology review intent. (2) Skip the sprint entirely without logging. (3) Document as blocked and proceed.

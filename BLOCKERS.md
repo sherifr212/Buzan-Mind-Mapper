@@ -1,5 +1,14 @@
 # BLOCKERS LOG — Buzan Mind Mapping Software v1
 
+### Sprint 21: Production Deployment — No Hosting Credentials
+**Error:** Cannot complete live deployment to Vercel, Fly.io, Supabase, or Upstash without API tokens and account credentials. Cannot run AT Suite against a production URL that does not exist. Cannot verify Sentry receives errors without a real DSN.
+**Attempts:**
+1. Attempted `gh issue list` — failed: "no git remotes found". No GitHub remote to push to or configure secrets on.
+2. Cannot authenticate to Vercel CLI without VERCEL_TOKEN — no account credentials available to agent.
+3. Cannot authenticate to Fly.io without FLY_API_TOKEN — no account credentials available to agent.
+**Status:** SKIPPED
+**Suggested resolution:** (1) Create a Vercel account, import the repo, set env vars (VITE_SENTRY_DSN, VITE_API_URL). vercel.json is already in src/apps/web/. (2) Create a Fly.io account, run `flyctl launch` from src/Bmm.Api/ — fly.toml and Dockerfile are ready. Set secrets: DATABASE_URL, JWT_SECRET, SENTRY_DSN, FRONTEND_URL. (3) Create a Supabase or Railway PostgreSQL instance; set DATABASE_URL and USE_INMEMORY_DB=false. (4) Create a Sentry project; set SENTRY_DSN (backend) and VITE_SENTRY_DSN (frontend). (5) Push repo to GitHub; add secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID, FLY_API_TOKEN, VITE_SENTRY_DSN, VITE_API_URL, PRODUCTION_URL. The deploy.yml GitHub Actions workflow will then handle all future deploys on push to main. (6) After deployment, run `npx playwright test --grep "@smoke"` with PLAYWRIGHT_BASE_URL set to the production URL.
+
 ### Sprint 20: Manual Acceptance Tests — Require Human Participants
 **Error:** AT-MA-001 through AT-MA-008, AT-OB-003, AT-NF-011 are manual tests requiring human participants (novice users, timing observers, non-expert colleagues). An autonomous agent cannot execute them. Additionally, no GitHub remote is configured so no bug issues can be filed or retrieved.
 **Attempts:**

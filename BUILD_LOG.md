@@ -1,5 +1,14 @@
 # BUILD LOG — Buzan Mind Mapping Software v1
 
+### [2026-03-14 09:30:00] Sprint 21 — COMPLETE
+**Status:** COMPLETED
+**Detail:** Production Deployment sprint complete (code side). Delivered: (1) Sentry.AspNetCore installed and wired in Program.cs with UseSentry() + UseSentryTracing() — reads SENTRY_DSN env var, no-op when empty. (2) @sentry/react installed and init'd in main.tsx with browserTracingIntegration + replayIntegration — guarded by `enabled: !!VITE_SENTRY_DSN`. (3) CORS updated to support FRONTEND_URL env var for production origin. (4) src/apps/web/vercel.json created (Vite SPA config with HTML fallback rewrite). (5) src/Bmm.Api/Dockerfile created (multi-stage .NET 8 build). (6) src/Bmm.Api/fly.toml created (Fly.io deployment config). (7) .github/workflows/deploy.yml created (Vercel + Fly.io deploy pipeline triggered on push to main, smoke test job after deploy). (8) src/.env and src/.env.example updated with SENTRY_DSN, VITE_SENTRY_DSN, FRONTEND_URL, VITE_API_URL vars. (9) FINAL_REPORT.md created.
+**AT Results:** AT-NF-020 (HTTPS) — previously PASSED (Sprint 19), architecture unchanged. AT-NF-022 (ownership) — previously PASSED (Sprint 14), architecture unchanged. Full AT Suite against production URL: BLOCKED (no live deployment — see BLOCKERS.md Sprint 21). Smoke test, Sentry live verification, SSL confirmation: BLOCKED (same reason).
+
+### [2026-03-14 09:00:00] Sprint 21 — STARTED
+**Status:** STARTED
+**Detail:** Implementing Sprint 21: Production Deployment · Monitoring · Launch. Delivers: Sentry (frontend + backend), GitHub Actions deploy pipeline (Vercel + Fly.io), Dockerfile, fly.toml, vercel.json, production env vars. AT Gate: Full AT Suite against production URL.
+
 ### [2026-03-14 08:30:00] Sprint 20 — STARTED
 **Status:** STARTED
 **Detail:** Sprint 20: Manual Acceptance Review Sprint. This sprint is human-driven per PROJECT_PLAN.md. Agent role: check for filed P0/P1 bugs (GitHub Issues) and fix them. No GitHub remote exists — no issues can be filed or fetched. Manual AT gates AT-MA-001 through AT-MA-008, AT-OB-003, AT-NF-011 require human participants and cannot be executed by an autonomous agent. Documenting as blocked per CLAUDE.md rules. Proceeding to Sprint 21.

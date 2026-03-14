@@ -16,6 +16,7 @@
     "@bmm/data-model": "*",
     "@bmm/enforcement": "*",
     "@bmm/ui": "*",
+    "@sentry/react": "^10.43.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-router-dom": "^7.13.1"

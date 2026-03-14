@@ -16,15 +16,25 @@ Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ── SENTRY ────────────────────────────────────────────────────────────────────
+builder.WebHost.UseSentry(o =>
+{
+    o.Dsn = Environment.GetEnvironmentVariable("SENTRY_DSN") ?? "";
+    o.TracesSampleRate = 1.0;
+    o.SendDefaultPii = false;
+});
+
 // ── CORS ──────────────────────────────────────────────────────────────────────
+var allowedOrigins = new List<string> { "http://localhost:3000", "https://localhost:3000" };
+var productionFrontend = Environment.GetEnvironmentVariable("FRONTEND_URL");
+if (!string.IsNullOrWhiteSpace(productionFrontend))
+    allowedOrigins.Add(productionFrontend);
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy
-            .WithOrigins("http://localhost:3000", "https://localhost:3000")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        policy.WithOrigins(allowedOrigins.ToArray()).AllowAnyHeader().AllowAnyMethod();
     });
 });
 
@@ -141,6 +151,7 @@ if (!app.Environment.IsEnvironment("Test"))
     app.UseHttpsRedirection();
 }
 
+app.UseSentryTracing();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
