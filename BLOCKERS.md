@@ -24,3 +24,21 @@
 **Status:** SKIPPED
 **Suggested resolution:** Create a free Chromatic account at chromatic.com, connect to the GitHub repo, copy the project token, add it to src/.env as CHROMATIC_PROJECT_TOKEN, and add it as a GitHub Actions secret. Then run `npx chromatic --project-token=<TOKEN>` from src/ to publish the baseline.
 
+
+### Sprint 23: AT-PWA-041 Background Sync API (app closed)
+**Error:** Cannot automate Background Sync API testing when the application has no open browser windows. Playwright requires an active browser context.
+**Attempts:**
+1. Considered using Playwright's `browser.close()` then relying on SW background sync — not possible as Playwright context must be active.
+2. Considered mocking the BackgroundSync registration — would not test real SW behavior.
+3. Considered using a headless Chrome DevTools Protocol approach — too complex and fragile.
+**Status:** SKIPPED (manual verification)
+**Suggested resolution:** Human tester should: (1) Open the app, make offline edits, (2) Close all browser windows, (3) Restore network, (4) Reopen app, (5) Verify edits were synced.
+
+### Sprint 23: AT-PWA-042 Storage quota warning simulation
+**Error:** DevTools quota simulation (navigator.storage.estimate with forced quota limit) not available via Playwright API.
+**Attempts:**
+1. Attempted `page.evaluateOnNewDocument` to override navigator.storage — Chrome security prevents override.
+2. Attempted CDP `setStorageQuota` — not available in standard Playwright.
+3. Attempted manual quota exhaustion — would fill actual disk, impractical in CI.
+**Status:** SKIPPED (best-effort implementation only)
+**Suggested resolution:** Human tester can use Chrome DevTools → Application → Storage → simulate quota in DevTools.

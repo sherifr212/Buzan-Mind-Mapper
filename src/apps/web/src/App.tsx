@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { EditableCanvas, PersonalStyleMode, TutorialFlow, useUserProgressStore, InstallBanner, SWUpdateBanner, triggerInstallPrompt } from '@bmm/ui';
+import { EditableCanvas, PersonalStyleMode, TutorialFlow, useUserProgressStore, InstallBanner, SWUpdateBanner, triggerInstallPrompt, NetworkStatusIndicator } from '@bmm/ui';
 import fixtureSimple from './fixtures/fixture-simple.bmm.json';
 import fixtureEmpty from './fixtures/fixture-empty.bmm.json';
 import fixtureTextCentral from './fixtures/fixture-text-central.bmm.json';
@@ -233,6 +233,9 @@ function App() {
       </Routes>
       <InstallBanner />
       <SWUpdateBanner />
+      <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 9999 }}>
+        <NetworkStatusIndicator />
+      </div>
     </BrowserRouter>
   );
 }

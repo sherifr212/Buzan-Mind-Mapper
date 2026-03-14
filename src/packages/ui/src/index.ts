@@ -28,3 +28,7 @@ export type { ComplianceViolation, ImportResult } from './ImportService';
 
 export { InstallBanner, triggerInstallPrompt } from './InstallBanner';
 export { SWUpdateBanner } from './SWUpdateBanner';
+
+export { NetworkStatusIndicator } from './NetworkStatusIndicator';
+export { PendingChangesIndicator } from './PendingChangesIndicator';
+export { OfflineMapBadge } from './OfflineMapBadge';
